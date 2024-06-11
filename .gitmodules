@@ -1,0 +1,3 @@
+[submodule "dependencies/premake/vscode"]
+	path = dependencies/premake/vscode
+	url = https://github.com/Enhex/premake-vscode
