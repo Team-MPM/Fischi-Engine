@@ -6,7 +6,7 @@
 template <typename... Args>
 using format_string_t = fmt::format_string<Args...>;
 
-namespace FischiEngine::Core
+namespace FischiEngine
 {
     class Log
     {

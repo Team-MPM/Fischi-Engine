@@ -1,16 +1,16 @@
-#include <string>
-#include "Fischi-Engine/Core/Log.h"
+#include "Core/Application.h"
 
 using namespace FischiEngine;
-using namespace FischiEngine::Core;
 
-int main(void) {
-   Log::Init();
-   Log::Trace("Hello world! My number is {}", 42);
-   Log::Debug("Hello world! My number is {}", 42);
-   Log::Info("Hello world! My number is {}", 42);
-   Log::Warn("Hello world! My number is {}", 42);
-   Log::Error("Hello world! My number is {}", 42);
-   Log::Fatal("Hello world! My number is {}", 42);
+int main(int argc, char** argv) {
+   ApplicationConfig config = {
+       "SandBox",
+       "0.0.1",
+       false
+   };
+
+    Application app(config, argc, argv);
+    app.Run();
+    
    return 0;
 }

@@ -4,7 +4,7 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/basic_file_sink.h>
 
-namespace FischiEngine::Core
+namespace FischiEngine
 {
     static std::shared_ptr<spdlog::logger> s_Logger;
     
@@ -23,10 +23,10 @@ namespace FischiEngine::Core
 
         s_Logger->set_level(spdlog::level::trace);
         // "[ColorBegin] [ISO_TIME] [THREAD_ID] [LOGGER] [LEVEL] [ColorEnd] [Message]"
-        consoleSink->set_pattern("[%T] [%t] [%n] %^[%l]%$\t %v");
+        consoleSink->set_pattern("[%T] [%t] [%n] %^[%l]%$ %v");
         // " [ISO_DATE ISO_TIME] [THREAD_ID] [LOGGER] [LEVEL] [Message]"
-        errorLogSink->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%t] [%n] %^[%l]%$\t %v");
-        debugLogSink->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%t] [%n] %^[%l]%$\t %v");
+        errorLogSink->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%t] [%n] %^[%l]%$ %v");
+        debugLogSink->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%t] [%n] %^[%l]%$ %v");
         
         s_Logger->sinks().push_back(consoleSink);
         s_Logger->sinks().push_back(errorLogSink);
