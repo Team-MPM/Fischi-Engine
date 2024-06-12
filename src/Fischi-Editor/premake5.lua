@@ -8,13 +8,16 @@ project "Fischi-Editor"
    objdir ("%{wks.location}/obj/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}")
 
    files { 
-      "./**.h", 
-      "./**.c" 
+      "**.h", 
+      "**.c",
+      "**.cpp"
    }
 
    includedirs {
       ".",
-      "../Fischi-Engine"
+      "../Fischi-Engine",
+      "%{wks.location}/src",
+      "%{wks.location}/dependencies/spdlog/include",
    }
 
    links{
@@ -25,8 +28,7 @@ project "Fischi-Editor"
       systemversion "latest"
 
       defines {
-          "FISCHI_PLATFORM_WINDOWS",
-          "_WINDLL"
+          "FISCHI_PLATFORM_WINDOWS"
       }
 
    filter "configurations:Debug"

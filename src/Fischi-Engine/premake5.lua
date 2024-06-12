@@ -8,12 +8,15 @@ project "Fischi-Engine"
    objdir ("%{wks.location}/obj/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}")
 
    files { 
-      "./**.h", 
-      "./**.c" 
+      "**.h", 
+      "**.c",
+      "**.cpp"
    }
 
    includedirs {
-      "."
+      ".",
+      "%{wks.location}/src",
+      "%{wks.location}/dependencies/spdlog/include",
    }
 
    links{
@@ -24,8 +27,7 @@ project "Fischi-Engine"
       systemversion "latest"
 
       defines {
-          "FISCHI_PLATFORM_WINDOWS",
-          "_WINDLL"
+          "FISCHI_PLATFORM_WINDOWS"
       }
 
    filter "configurations:Debug"
