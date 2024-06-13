@@ -41,3 +41,7 @@ project "Fischi-Engine"
    filter "configurations:Dist"
       defines { "FISCHI_DIST" }
       optimize "On"
+
+      postbuildcommands {
+         "{COPY} %{wks.location}/resources %{cfg.targetdir}/resources"
+      }

@@ -4,7 +4,7 @@ using namespace FischiEngine;
 
 int main(int argc, char** argv) {
    ApplicationConfig config = {
-       "SandBox",
+       "Sandbox",
        "0.0.1",
        false
    };

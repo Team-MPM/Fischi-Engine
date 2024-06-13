@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <filesystem>
 #include <spdlog/fmt/fmt.h>
 #include <spdlog/fmt/bundled/core.h>
 
@@ -24,8 +25,8 @@ namespace FischiEngine
         };
         
         static void LogMessage(std::string_view message, Level level);
-        
-        static void Init();
+
+        static void Init(std::filesystem::path logPath);
 
         template <typename... Params>
         static void Trace(format_string_t<Params...> message, Params&& ... params)

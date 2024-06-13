@@ -7,6 +7,8 @@
 
 namespace FischiEngine
 {
+    static Application* s_ApplicationInstance = nullptr;
+    
     std::filesystem::path Application::DetectEngineInstallation()
     {
         bool engineFound = false;
@@ -46,24 +48,25 @@ namespace FischiEngine
         
         if (!engineFound)
         {
-            Log::Fatal("Engine installation not found! Exiting...");
+            std::cerr << "Engine installation not found! Exiting...\n";
             FISCHI_ABORT();
         }
-
         
-        Log::Trace("Engine installation found at: {0}", enginePath.string());
-
         return enginePath;
     }
 
     Application::Application(const ApplicationConfig& config, int argc, char** argv)
         : m_Config(config)
     {
+        s_ApplicationInstance = this;
         std::cout << "Starting Fischi Engine!\n";
-        Log::Init();
 
-        Log::Trace("Detecting Engine Path...");
+        std::cout << "Detecting Engine Path...\n";
 
+#ifdef FISCHI_DIST
+        m_Config.Standalone = true;
+#endif
+        
         if (m_Config.Standalone)
         {
             m_EnginePath = std::filesystem::absolute(argv[0]).parent_path();
@@ -74,8 +77,24 @@ namespace FischiEngine
             m_EnginePath = DetectEngineInstallation();
         }
 
+        auto logPath = std::filesystem::path(m_EnginePath).append("logs");
+        Log::Init(logPath);
+        Log::Trace("Engine installation found at: {0}", m_EnginePath.string());
+        Log::Trace("Log path set to: {0}", logPath.string());
+
         Log::Trace("Validation Application config...");
-        
+        if (m_Config.Name == nullptr || m_Config.Name[0] == '\0')
+        {
+            Log::Error("Application name is empty!");
+            FISCHI_ABORT();
+        }
+
+        if (m_Config.Version == nullptr || m_Config.Version[0] == '\0')
+        {
+            Log::Error("Application version is empty!");
+            FISCHI_ABORT();
+        }
+        Log::Trace("Successfully validated Application config!");
     }
 
     Application::~Application()
@@ -88,5 +107,10 @@ namespace FischiEngine
         {
             
         }
+    }
+
+    Application* Application::Get()
+    {
+        return s_ApplicationInstance;
     }
 }

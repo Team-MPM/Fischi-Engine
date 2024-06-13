@@ -8,8 +8,8 @@ namespace FischiEngine
 {
     struct ApplicationConfig
     {
-        const char* Name;
-        const char* Version;
+        const char* Name = nullptr;
+        const char* Version = nullptr;
         bool Standalone;
     };
     
@@ -20,6 +20,8 @@ namespace FischiEngine
         ~Application();
 
         void Run();
+
+        static Application* Get();
 
         const char* GetName() const { return m_Config.Name; }
         const char* GetVersion() const { return m_Config.Version; }

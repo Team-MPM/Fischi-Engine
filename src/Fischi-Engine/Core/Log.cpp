@@ -8,20 +8,20 @@ namespace FischiEngine
 {
     static std::shared_ptr<spdlog::logger> s_Logger;
     
-    void Log::Init()
+    void Log::Init(std::filesystem::path logPath)
     {
         const auto consoleSink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
         consoleSink->set_level(spdlog::level::trace);
 
-        const auto errorLogSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("error.log");
+        const auto errorLogSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(std::filesystem::path(logPath).append("error.log").string());
         errorLogSink->set_level(spdlog::level::warn);
 
-        const auto debugLogSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("debug.log");
+        const auto debugLogSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(std::filesystem::path(logPath).append("debug.log").string());
         debugLogSink->set_level(spdlog::level::trace);
         
         s_Logger = std::make_shared<spdlog::logger>("FischiEngine");
-
         s_Logger->set_level(spdlog::level::trace);
+        
         // "[ColorBegin] [ISO_TIME] [THREAD_ID] [LOGGER] [LEVEL] [ColorEnd] [Message]"
         consoleSink->set_pattern("[%T] [%t] [%n] %^[%l]%$ %v");
         // " [ISO_DATE ISO_TIME] [THREAD_ID] [LOGGER] [LEVEL] [Message]"

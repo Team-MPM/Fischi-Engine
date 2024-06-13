@@ -69,4 +69,4 @@ namespace FischiEngine
 #endif
 
 // Define Abort
-#define FISCHI_ABORT() abort()
+#define FISCHI_ABORT() Log::Fatal("Application was aborted at: {0}: {1}", __FILE__, __LINE__); abort()
