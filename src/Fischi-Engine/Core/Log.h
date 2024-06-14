@@ -71,3 +71,24 @@ namespace FischiEngine
         }
     };
 }
+
+template <typename T, typename = void>
+struct has_to_string : std::false_type {};
+
+template <typename T>
+struct has_to_string<T, std::void_t<decltype(std::declval<T>().ToString())>> : std::true_type {};
+
+namespace fmt {
+    template<typename T>
+    struct formatter<T, std::enable_if_t<has_to_string<T>::value>> {
+        template<typename ParseContext>
+        constexpr auto parse(ParseContext& ctx) {
+            return ctx.begin();
+        }
+
+        template<typename FormatContext>
+        auto format(const T& value, FormatContext& ctx) {
+            return format_to(ctx.out(), "{}", value.ToString());
+        }
+    };
+}

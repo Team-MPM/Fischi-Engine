@@ -77,7 +77,7 @@ namespace FischiEngine
             m_EnginePath = DetectEngineInstallation();
         }
 
-        auto logPath = std::filesystem::path(m_EnginePath).append("logs");
+        const auto logPath = std::filesystem::path(m_EnginePath).append("logs");
         Log::Init(logPath);
         Log::Trace("Engine installation found at: {0}", m_EnginePath.string());
         Log::Trace("Log path set to: {0}", logPath.string());
