@@ -7,6 +7,7 @@
 #include "Core/Log.h"
 #include "Event/EventDefs.h"
 #include "Memory/Memory.h"
+#include "Platform/Platform.h"
 #include "Time/Timer.h"
 
 namespace FischiEngine
@@ -60,7 +61,7 @@ namespace FischiEngine
     }
 
     Application::Application(const ApplicationConfig& config, int argc, char** argv)
-        : m_Config(config)
+        : m_Config(config), m_Windows(Memory::CreateVector<Shared<Window>>(MemoryUsage::Application))
     {
         s_ApplicationInstance = this;
         std::cout << "Starting Fischi Engine!\n";
@@ -99,16 +100,21 @@ namespace FischiEngine
             FISCHI_ABORT();
         }
         Log::Trace("Successfully validated Application config!");
+
+        Platform::Init();
     }
 
     Application::~Application()
     {
+        Platform::Shutdown();
     }
 
     void Application::Run()
     {
+        OnStartup();
+        
         Memory::LogMemoryUsage();
-        m_EventQueue.PushEvent(KeyPressedEvent(KeyCode::A, 0));
+        
         while (true)
         {
             ScopedTimer timer("Frame");
@@ -116,8 +122,24 @@ namespace FischiEngine
             for (Event* event = m_EventQueue.begin(); event < m_EventQueue.end(); event += EventQueue::GetMaxEventSize())
             {
                 Log::Trace("Event: {0}", event->ToString());
+                // TODO: Handle default events
+                if (OnEvent(event))
+                    continue;
+
+                for (const auto window : m_Windows)
+                {
+                    if (window->OnEvent(event))
+                        break;
+                }
             }
             m_EventQueue.Clear();
+
+            OnUpdate();
+
+            for (const auto window : m_Windows)
+            {
+                window->OnUpdate();
+            }
         }
     }
 

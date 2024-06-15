@@ -3,7 +3,9 @@
 #include <filesystem>
 
 #include "Core.h"
+#include "Window.h"
 #include "Event/EventQueue.h"
+#include "Memory/Memory.h"
 
 namespace FischiEngine
 {
@@ -18,7 +20,7 @@ namespace FischiEngine
     {
     public:
         explicit Application(const ApplicationConfig& config, int argc, char** argv);
-        ~Application();
+        virtual ~Application();
 
         void Run();
 
@@ -28,8 +30,17 @@ namespace FischiEngine
         const char* GetVersion() const { return m_Config.Version; }
 
         std::filesystem::path GetEnginePath() const { return m_EnginePath; }
+        const ApplicationConfig& GetConfig() const { return m_Config; }
+        const EventQueue& GetEventQueue() const { return m_EventQueue; }
+
+        virtual void OnStartup() = 0;
+        virtual bool OnEvent(Event* event) = 0;
+        virtual void OnUpdate() = 0;
+        
     private:
         std::filesystem::path DetectEngineInstallation();
+    protected:
+        Vector<Shared<Window>> m_Windows;
     private:
         ApplicationConfig m_Config;
         std::filesystem::path m_EnginePath;

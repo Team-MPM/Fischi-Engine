@@ -159,7 +159,7 @@ namespace FischiEngine
         using Vector = std::vector<T, TrackingAllocator<T>>;
 
         template <typename T>
-        static Vector<T> NewVector(MemoryUsage usage, size_t capacity = 0)
+        static Vector<T> CreateVector(MemoryUsage usage, size_t capacity = 0)
         {
             std::vector<T, TrackingAllocator<T>> vec{TrackingAllocator<T>(usage)};
             vec.reserve(capacity);

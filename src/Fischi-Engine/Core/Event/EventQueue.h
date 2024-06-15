@@ -1,7 +1,7 @@
 #pragma once
 
 #include <mutex>
-#include <vector>
+#include <string.h>
 
 #include "Event.h"
 #include "Core/Memory/LinearBlockAllocator.h"
