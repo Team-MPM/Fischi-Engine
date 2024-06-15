@@ -21,19 +21,16 @@ namespace FischiEngine
 
     void LinearBlockAllocator::Reset()
     {
-        std::lock_guard lock(m_Mutex);
         m_NextBlock = m_Memory;
     }
 
-    void* LinearBlockAllocator::begin()
+    void* LinearBlockAllocator::begin() const
     {
-        std::lock_guard lock(m_Mutex);
         return m_Memory;
     }
 
-    void* LinearBlockAllocator::end()
+    void* LinearBlockAllocator::end() const
     {
-        std::lock_guard lock(m_Mutex);
         return m_NextBlock;
     }
 

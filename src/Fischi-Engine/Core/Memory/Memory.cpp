@@ -43,6 +43,7 @@ namespace FischiEngine
             case MemoryType::Heap: typeStr = "Heap"; break;
             case MemoryType::Pool: typeStr = "Pool"; break;
             case MemoryType::Vector: typeStr = "Vector"; break;
+            case MemoryType::LinearBlockAllocator: typeStr = "LinearBlockAllocator"; break;
             }
             Log::Info("\t{0}: {1} bytes", typeStr, size);
             totalTypeMemory += size;

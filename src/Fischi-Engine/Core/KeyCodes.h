@@ -5,6 +5,7 @@ namespace FischiEngine
     enum class KeyCode
     {
         // TODO
+        A
     };
 
     enum class MouseButton

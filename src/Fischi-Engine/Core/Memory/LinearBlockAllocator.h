@@ -15,8 +15,8 @@ namespace FischiEngine
         void* Allocate(size_t count = 1);
         void Reset();
 
-        void* begin();
-        void* end();
+        void* begin() const;
+        void* end() const;
     private:
         
 

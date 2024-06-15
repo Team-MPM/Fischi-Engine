@@ -3,6 +3,7 @@
 #include <filesystem>
 
 #include "Core.h"
+#include "Event/EventQueue.h"
 
 namespace FischiEngine
 {
@@ -32,6 +33,7 @@ namespace FischiEngine
     private:
         ApplicationConfig m_Config;
         std::filesystem::path m_EnginePath;
+        EventQueue m_EventQueue;
     };
     
 }

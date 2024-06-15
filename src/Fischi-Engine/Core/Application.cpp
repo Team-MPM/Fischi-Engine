@@ -5,6 +5,9 @@
 
 #include "Core/Core.h"
 #include "Core/Log.h"
+#include "Event/EventDefs.h"
+#include "Memory/Memory.h"
+#include "Time/Timer.h"
 
 namespace FischiEngine
 {
@@ -104,9 +107,17 @@ namespace FischiEngine
 
     void Application::Run()
     {
+        Memory::LogMemoryUsage();
+        m_EventQueue.PushEvent(KeyPressedEvent(KeyCode::A, 0));
         while (true)
         {
-            
+            ScopedTimer timer("Frame");
+            Log::Debug("Processing Events...");
+            for (Event* event = m_EventQueue.begin(); event < m_EventQueue.end(); event += EventQueue::GetMaxEventSize())
+            {
+                Log::Trace("Event: {0}", event->ToString());
+            }
+            m_EventQueue.Clear();
         }
     }
 

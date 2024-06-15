@@ -4,8 +4,6 @@
 #include <spdlog/fmt/fmt.h>
 #include <spdlog/fmt/bundled/core.h>
 
-#include "Core.h"
-
 template <typename... Args>
 using format_string_t = fmt::format_string<Args...>;
 
@@ -40,8 +38,10 @@ namespace FischiEngine
         template <typename ...Params>
         static void Debug(format_string_t<Params...> message, Params &&... params)
         {
+            #ifdef FISCHI_DEBUG
             const std::string formatted_message = fmt::format(message, std::forward<Params>(params)...);
             LogMessage(formatted_message, Level::Debug);
+            #endif
         }
         
         template <typename ... Params>
