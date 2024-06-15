@@ -4,22 +4,26 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/basic_file_sink.h>
 
+#include "Memory/Memory.h"
+
 namespace FischiEngine
 {
-    static std::shared_ptr<spdlog::logger> s_Logger;
+    static Shared<spdlog::logger> s_Logger;
     
     void Log::Init(std::filesystem::path logPath)
     {
         const auto consoleSink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
         consoleSink->set_level(spdlog::level::trace);
 
-        const auto errorLogSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(std::filesystem::path(logPath).append("error.log").string());
+        const auto errorLogSink = Memory::CreateShared<spdlog::sinks::basic_file_sink_mt>
+            (MemoryUsage::Application, std::filesystem::path(logPath).append("error.log").string());
         errorLogSink->set_level(spdlog::level::warn);
 
-        const auto debugLogSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(std::filesystem::path(logPath).append("debug.log").string());
+        const auto debugLogSink = Memory::CreateShared<spdlog::sinks::basic_file_sink_mt>
+            (MemoryUsage::Application, std::filesystem::path(logPath).append("debug.log").string());
         debugLogSink->set_level(spdlog::level::trace);
         
-        s_Logger = std::make_shared<spdlog::logger>("FischiEngine");
+        s_Logger = Memory::CreateShared<spdlog::logger>(MemoryUsage::Application, "FischiEngine");
         s_Logger->set_level(spdlog::level::trace);
         
         // "[ColorBegin] [ISO_TIME] [THREAD_ID] [LOGGER] [LEVEL] [ColorEnd] [Message]"

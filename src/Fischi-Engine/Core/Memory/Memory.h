@@ -1,7 +1,10 @@
 #pragma once
 
 #include <memory>
+#include <mutex>
 #include <unordered_map>
+
+#include "LinearBlockAllocator.h"
 
 namespace FischiEngine
 {
@@ -21,7 +24,8 @@ namespace FischiEngine
         Heap,
         Arena,
         Pool,
-        Vector
+        Vector,
+        LinearBlockAllocator
     };
 
     enum class MemoryUsage
@@ -34,50 +38,65 @@ namespace FischiEngine
         Renderer,
         Game,
     };
-    
+
     class Memory
     {
     public:
         template <typename T, typename... Args>
-        static constexpr Unique<T> CreateUnique(Args&&... args, MemoryUsage usage)
+        static constexpr Unique<T> CreateUnique(MemoryUsage usage, Args&&... args)
         {
             auto deleter = [usage](const T* ptr)
             {
+                std::lock_guard lock(m_Mutex);
                 m_MemoryTypes[MemoryType::Unique] -= sizeof(T);
                 m_MemoryUsages[usage] -= sizeof(T);
                 delete ptr;
             };
 
             Unique<T> ptr(new T(std::forward<Args>(args)...), deleter);
-            m_MemoryTypes[MemoryType::Unique] += sizeof(T);
-            m_MemoryUsages[usage] += sizeof(T);
+
+            {
+                std::lock_guard lock(m_Mutex);
+                m_MemoryTypes[MemoryType::Unique] += sizeof(T);
+                m_MemoryUsages[usage] += sizeof(T);
+            }
 
             return ptr;
         }
 
         template <typename T, typename... Args>
-        static constexpr Shared<T> CreateShared(Args&&... args, MemoryUsage usage)
+        static constexpr Shared<T> CreateShared(const MemoryUsage usage, Args&&... args)
         {
             auto deleter = [usage](const T* ptr)
             {
-                m_MemoryTypes[MemoryType::Shared] -= sizeof(T);
-                m_MemoryUsages[usage] -= sizeof(T);
+                {
+                    std::lock_guard lock(m_Mutex);
+                    m_MemoryTypes[MemoryType::Shared] -= sizeof(T);
+                    m_MemoryUsages[usage] -= sizeof(T);
+                }
                 delete ptr;
             };
-            
+
             Shared<T> ptr(new T(std::forward<Args>(args)...), deleter);
-            m_MemoryTypes[MemoryType::Shared] += sizeof(T);
-            m_MemoryUsages[usage] += sizeof(T);
+            {
+                std::lock_guard lock(m_Mutex);
+                m_MemoryTypes[MemoryType::Shared] += sizeof(T);
+                m_MemoryUsages[usage] += sizeof(T);
+            }
 
             return ptr;
         }
 
         template <typename T, typename... Args>
-        static T* AllocateHeap(Args&&... args, const MemoryUsage usage)
+        static T* AllocateHeap(const MemoryUsage usage, Args&&... args)
         {
             T* ptr = new T(std::forward<Args>(args)...);
-            m_MemoryTypes[MemoryType::Heap] += sizeof(T);
-            m_MemoryUsages[usage] += sizeof(T);
+
+            {
+                std::lock_guard lock(m_Mutex);
+                m_MemoryTypes[MemoryType::Heap] += sizeof(T);
+                m_MemoryUsages[usage] += sizeof(T);
+            }
 
             return ptr;
         }
@@ -85,8 +104,11 @@ namespace FischiEngine
         template <typename T>
         static void FreeHeap(T* ptr, const MemoryUsage usage)
         {
-            m_MemoryTypes[MemoryType::Heap] -= sizeof(T);
-            m_MemoryUsages[usage] -= sizeof(T);
+            {
+                std::lock_guard lock(m_Mutex);
+                m_MemoryTypes[MemoryType::Heap] -= sizeof(T);
+                m_MemoryUsages[usage] -= sizeof(T);
+            }
             delete ptr;
         }
 
@@ -95,13 +117,17 @@ namespace FischiEngine
         {
         public:
             MemoryUsage Usage;
-            
-            TrackingAllocator(MemoryUsage usage = MemoryUsage::Other) : Usage(usage) {}
+
+            TrackingAllocator(MemoryUsage usage = MemoryUsage::Other) : Usage(usage)
+            {
+            }
 
             template <typename U>
-            TrackingAllocator(const TrackingAllocator<U>& other) : Usage(other.Usage) {}
+            TrackingAllocator(const TrackingAllocator<U>& other) : Usage(other.Usage)
+            {
+            }
 
-            
+
             template <typename U>
             struct rebind
             {
@@ -110,37 +136,63 @@ namespace FischiEngine
 
             T* allocate(std::size_t n)
             {
-                m_MemoryTypes[MemoryType::Vector] += sizeof(T);
-                m_MemoryUsages[Usage] += sizeof(T);
+                {
+                    std::lock_guard lock(m_Mutex);
+                    m_MemoryTypes[MemoryType::Vector] += sizeof(T);
+                    m_MemoryUsages[Usage] += sizeof(T);
+                }
                 return std::allocator<T>::allocate(n);
             }
 
             void deallocate(T* p, std::size_t n)
             {
-                m_MemoryTypes[MemoryType::Vector] -= sizeof(T);
-                m_MemoryUsages[Usage] -= sizeof(T);
+                {
+                    std::lock_guard lock(m_Mutex);
+                    m_MemoryTypes[MemoryType::Vector] -= sizeof(T);
+                    m_MemoryUsages[Usage] -= sizeof(T);
+                }
                 std::allocator<T>::deallocate(p, n);
             }
         };
 
         template <typename T>
-        using Vector = std::vector<T, Memory::TrackingAllocator<T>>;
-        
+        using Vector = std::vector<T, TrackingAllocator<T>>;
+
         template <typename T>
         static Vector<T> NewVector(MemoryUsage usage, size_t capacity = 0)
         {
-            std::vector<T, TrackingAllocator<T>> vec{TrackingAllocator<T> (usage)};
+            std::vector<T, TrackingAllocator<T>> vec{TrackingAllocator<T>(usage)};
             vec.reserve(capacity);
             return vec;
         }
 
+        
+
         static void LogMemoryUsage();
 
-        static std::unordered_map<MemoryUsage, size_t> GetMemoryUsages() { return m_MemoryUsages; }
-        static std::unordered_map<MemoryType, size_t> GetMemoryTypes() { return m_MemoryTypes; }
+        static std::unordered_map<MemoryUsage, size_t> GetMemoryUsages();
+        static std::unordered_map<MemoryType, size_t> GetMemoryTypes();
+
+        static LinearBlockAllocator CreateLinearBlockAllocator(size_t blockSize, size_t blockCount, MemoryUsage usage)
+        {
+            {
+                std::lock_guard lock(m_Mutex);
+                m_MemoryTypes[MemoryType::LinearBlockAllocator] += blockSize * blockCount;
+                m_MemoryUsages[usage] += blockSize * blockCount;
+            }
+            
+            return LinearBlockAllocator(blockSize, blockCount, [usage, blockSize, blockCount]()
+            {
+                std::lock_guard lock(m_Mutex);
+                m_MemoryTypes[MemoryType::LinearBlockAllocator] -= blockSize * blockCount;
+                m_MemoryUsages[usage] -= blockSize * blockCount;
+            });
+        }
+
     private:
         static std::unordered_map<MemoryUsage, size_t> m_MemoryUsages;
         static std::unordered_map<MemoryType, size_t> m_MemoryTypes;
+        static std::mutex m_Mutex;
     };
 
     template <typename T>

@@ -3,7 +3,8 @@
 #include <filesystem>
 #include <iostream>
 
-#include "Log.h"
+#include "Core/Core.h"
+#include "Core/Log.h"
 
 namespace FischiEngine
 {
@@ -103,12 +104,6 @@ namespace FischiEngine
 
     void Application::Run()
     {
-        {
-            auto v = Memory::CreateShared<int>(MemoryUsage::Application);
-            auto vec = Memory::NewVector<int>(MemoryUsage::Game, 10);
-            Memory::LogMemoryUsage();
-        }
-        Memory::LogMemoryUsage();
         while (true)
         {
             

@@ -6,7 +6,8 @@ namespace FischiEngine
 {
     std::unordered_map<MemoryUsage, size_t> Memory::m_MemoryUsages;
     std::unordered_map<MemoryType, size_t> Memory::m_MemoryTypes;
-    
+    std::mutex Memory::m_Mutex;
+
     void Memory::LogMemoryUsage()
     {
         size_t totalUsageMemory = 0;
@@ -53,4 +54,10 @@ namespace FischiEngine
         Log::Info("Total memory usage: {0} bytes", totalTypeMemory);
         Log::Info("");
     }
+
+    std::unordered_map<MemoryUsage, size_t> Memory::GetMemoryUsages()
+    { return m_MemoryUsages; }
+
+    std::unordered_map<MemoryType, size_t> Memory::GetMemoryTypes()
+    { return m_MemoryTypes; }
 }

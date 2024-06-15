@@ -1,10 +1,13 @@
 #pragma once
 
-#include <Core/Memory/Memory.h>
+#include <cstdint>
+#include <memory>
 
 // Detect Platform
 #if defined(_WIN32) || defined(_WIN64)
-    #define FISCHI_PLATFORM_WINDOWS
+    #ifndef FISCHI_PLATFORM_WINDOWS
+        #define FISCHI_PLATFORM_WINDOWS
+    #endif
     #define _CRT_SECURE_NO_WARNINGS
 #elif defined(__linux__)
     #define FISCHI_PLATFORM_LINUX
