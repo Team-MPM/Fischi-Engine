@@ -1,6 +1,6 @@
 #pragma once
 
-#include <memory>
+#include <Core/Memory/Memory.h>
 
 // Detect Platform
 #if defined(_WIN32) || defined(_WIN64)
@@ -30,31 +30,6 @@
 
 // Define common macros
 #define BIT(x) (1 << x)
-
-// Define Smart Pointers
-namespace FischiEngine
-{
-    template <typename T>
-    using Unique = std::unique_ptr<T>;
-
-    template <typename T>
-    using Shared = std::shared_ptr<T>;
-
-    template <typename T>
-    using Weak = std::weak_ptr<T>;
-
-    template <typename T, typename... Args>
-    constexpr Unique<T> CreateUnique(Args&&... args)
-    {
-        return std::make_unique<T>(std::forward<Args>(args)...);
-    }
-
-    template <typename T, typename... Args>
-    constexpr Shared<T> CreateShared(Args&&... args)
-    {
-        return std::make_shared<T>(std::forward<Args>(args)...);
-    }
-}
 
 // Define Asserts
 #if defined(FISCHI_DIST)

@@ -4,6 +4,8 @@
 #include <spdlog/fmt/fmt.h>
 #include <spdlog/fmt/bundled/core.h>
 
+#include "Core.h"
+
 template <typename... Args>
 using format_string_t = fmt::format_string<Args...>;
 
