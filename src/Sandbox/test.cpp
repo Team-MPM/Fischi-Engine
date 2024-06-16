@@ -14,6 +14,10 @@ public:
     void OnStartup() override
     {
         Window::Spec spec;
+        spec.Width = 1280;
+        spec.Height = 720;
+        spec.Decorated = true;
+        spec.Fullscreen = false;
         m_Windows.push_back(Window::Create(spec));
     }
     
@@ -26,17 +30,23 @@ public:
     {
         
     }
+
+    void OnShutdown() override
+    {
+        
+    }
 };
 
-int main(int argc, char** argv) {
-   ApplicationConfig config = {
-       "Sandbox",
-       "0.0.1",
-       false
-   };
+int main(int argc, char** argv)
+{
+    ApplicationConfig config = {
+        "Sandbox",
+        "0.0.1",
+        false
+    };
 
     Sandbox app(config, argc, argv);
     app.Run();
-    
-   return 0;
+
+    return 0;
 }

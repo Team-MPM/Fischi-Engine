@@ -31,16 +31,18 @@ namespace FischiEngine
 
         std::filesystem::path GetEnginePath() const { return m_EnginePath; }
         const ApplicationConfig& GetConfig() const { return m_Config; }
-        const EventQueue& GetEventQueue() const { return m_EventQueue; }
+        EventQueue& GetEventQueue() { return m_EventQueue; }
 
         virtual void OnStartup() = 0;
         virtual bool OnEvent(Event* event) = 0;
         virtual void OnUpdate() = 0;
+        virtual void OnShutdown() = 0;
         
     private:
         std::filesystem::path DetectEngineInstallation();
     protected:
         Vector<Shared<Window>> m_Windows;
+        Shared<Window> m_MainWindow;
     private:
         ApplicationConfig m_Config;
         std::filesystem::path m_EnginePath;

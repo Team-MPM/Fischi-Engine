@@ -106,19 +106,32 @@ namespace FischiEngine
 
     Application::~Application()
     {
+        Log::Info("Fischi Engine shutting down...");
         Platform::Shutdown();
     }
 
     void Application::Run()
     {
         OnStartup();
+
+        if (m_Windows.empty())
+        {
+            Log::Error("No windows created! Exiting...");
+            FISCHI_ABORT();
+            return;
+        }
+        
+        m_MainWindow = m_Windows[0];
         
         Memory::LogMemoryUsage();
         
         while (true)
         {
-            ScopedTimer timer("Frame");
-            Log::Debug("Processing Events...");
+            if (!m_MainWindow->IsOpen())
+                break;
+            
+            //ScopedTimer timer("Frame");
+            //Log::Debug("Processing Events...");
             for (Event* event = m_EventQueue.begin(); event < m_EventQueue.end(); event += EventQueue::GetMaxEventSize())
             {
                 Log::Trace("Event: {0}", event->ToString());
@@ -141,6 +154,8 @@ namespace FischiEngine
                 window->OnUpdate();
             }
         }
+        
+        OnShutdown();
     }
 
     Application* Application::Get()

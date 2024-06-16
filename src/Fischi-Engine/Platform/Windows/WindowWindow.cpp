@@ -1,4 +1,7 @@
-﻿#ifdef FISCHI_PLATFORM_WINDOWS
+﻿#include "WindowInupt.h"
+#include "Core/Application.h"
+#include "Core/Event/EventDefs.h"
+#ifdef FISCHI_PLATFORM_WINDOWS
 #include "WindowsPlatform.h"
 #include "Core/Log.h"
 #include "WindowWindow.h"
@@ -9,8 +12,46 @@ namespace FischiEngine
     {
         switch (msg)
         {
+        // case WM_CREATE:
+        //     break;
+        // case WM_DESTROY:
+        //     break;
         case WM_CLOSE:
-            PostQuitMessage(0);
+            Application::Get()->GetEventQueue().PushEvent(WindowCloseEvent(hwnd));
+            break;
+        // case WM_MOVE:
+        //     break;
+        // case WM_SIZE:
+        //     break;
+        case WM_KEYDOWN:
+            Application::Get()->GetEventQueue().PushEvent(KeyPressedEvent(hwnd, WindowInupt::TranslateKeyCode(wParam), 0));
+            break;
+        case WM_KEYUP:
+            Application::Get()->GetEventQueue().PushEvent(KeyReleasedEvent(hwnd, WindowInupt::TranslateKeyCode(wParam)));
+            break;
+        case WM_LBUTTONDOWN:
+            Application::Get()->GetEventQueue().PushEvent(MouseButtonPressedEvent(hwnd, MouseButton::Left));
+            break;
+        case WM_LBUTTONUP:
+            Application::Get()->GetEventQueue().PushEvent(MouseButtonReleasedEvent(hwnd, MouseButton::Left));
+            break;
+        case WM_RBUTTONDOWN:
+            Application::Get()->GetEventQueue().PushEvent(MouseButtonPressedEvent(hwnd, MouseButton::Right));
+            break;
+        case WM_RBUTTONUP:
+            Application::Get()->GetEventQueue().PushEvent(MouseButtonReleasedEvent(hwnd, MouseButton::Right));
+            break;
+        case WM_MBUTTONDOWN:
+            Application::Get()->GetEventQueue().PushEvent(MouseButtonPressedEvent(hwnd, MouseButton::Middle));
+            break;
+        case WM_MBUTTONUP:
+            Application::Get()->GetEventQueue().PushEvent(MouseButtonReleasedEvent(hwnd, MouseButton::Middle));
+            break;
+        case WM_MOUSEMOVE:
+            Application::Get()->GetEventQueue().PushEvent(MouseMovedEvent(hwnd, LOWORD(lParam), HIWORD(lParam)));
+            break;
+        case WM_MOUSEWHEEL:
+            Application::Get()->GetEventQueue().PushEvent(MouseScrolledEvent(hwnd, 0.0f, 0.0f));//GET_WHEEL_DELTA_WPARAM(wParam)));
             break;
         default:
             return DefWindowProc(hwnd, msg, wParam, lParam);
@@ -39,11 +80,24 @@ namespace FischiEngine
             return;
         }
 
+        LONG style = {};
+        style |= WS_TABSTOP;
+        if (spec.Minimized)
+            style |= WS_MINIMIZE;
+        else
+            style |= WS_VISIBLE;
+        if (spec.Decorated)
+            style |= WS_OVERLAPPEDWINDOW;
+        else
+            style |= WS_POPUP;
+        if (spec.Maximized)
+            style |= WS_MAXIMIZE;
+        
         m_WindowHandle = CreateWindowEx(
             0,
             spec.Title.c_str(),
             spec.Title.c_str(),
-            WS_OVERLAPPEDWINDOW,
+            style,
             spec.X, spec.Y, spec.Width, spec.Height,
             NULL, NULL, WindowsPlatformState::hInstance, NULL
         );
@@ -55,6 +109,11 @@ namespace FischiEngine
             return;
         }
 
+        GetWindowRect(m_WindowHandle, &m_OldWindowRect);
+
+        if (spec.Fullscreen)
+            SetFullscreen(true);
+
         ShowWindow(m_WindowHandle, SW_SHOW);
         UpdateWindow(m_WindowHandle);
     }
@@ -63,6 +122,36 @@ namespace FischiEngine
     {
         Close();
         UnregisterClass(m_WindowClass.lpszClassName, m_WindowClass.hInstance);
+    }
+
+    void WindowsWindow::SetFullscreen(bool fullscreen)
+    {
+        if (fullscreen)
+        {
+            GetWindowRect(m_WindowHandle, &m_OldWindowRect);
+
+            SetWindowLong(m_WindowHandle, GWL_STYLE, WS_POPUP);
+
+            HMONITOR hmon = MonitorFromWindow(m_WindowHandle, MONITOR_DEFAULTTONEAREST);
+            MONITORINFO mi = {sizeof(mi)};
+            GetMonitorInfo(hmon, &mi);
+
+            SetWindowPos(m_WindowHandle, HWND_TOP,
+                         mi.rcMonitor.left, mi.rcMonitor.top,
+                         mi.rcMonitor.right - mi.rcMonitor.left,
+                         mi.rcMonitor.bottom - mi.rcMonitor.top,
+                         SWP_FRAMECHANGED | SWP_NOACTIVATE);
+        }
+        else
+        {
+            SetWindowLong(m_WindowHandle, GWL_STYLE, WS_OVERLAPPEDWINDOW);
+
+            SetWindowPos(m_WindowHandle, HWND_NOTOPMOST,
+                         m_OldWindowRect.left, m_OldWindowRect.top,
+                         m_OldWindowRect.right - m_OldWindowRect.left,
+                         m_OldWindowRect.bottom - m_OldWindowRect.top,
+                         SWP_FRAMECHANGED | SWP_NOACTIVATE);
+        }
     }
 
     void WindowsWindow::Close()
@@ -74,14 +163,21 @@ namespace FischiEngine
         }
     }
 
+    bool WindowsWindow::IsOpen() const
+    {
+        return m_WindowHandle != NULL;
+    }
+
+    void WindowsWindow::Minimize()
+    {
+        ShowWindow(m_WindowHandle, SW_MINIMIZE);
+    }
+
     void WindowsWindow::Maximize()
     {
+        ShowWindow(m_WindowHandle, SW_MAXIMIZE);
     }
-
-    void WindowsWindow::CenterWindow()
-    {
-    }
-
+    
     std::pair<uint32_t, uint32_t> WindowsWindow::GetSize() const
     {
         return std::make_pair(0, 0);
@@ -95,7 +191,7 @@ namespace FischiEngine
     void WindowsWindow::OnUpdate()
     {
         MSG msg = {};
-        while (GetMessage(&msg, m_WindowHandle, 0, 0))
+        while (PeekMessage(&msg, m_WindowHandle, 0, 0, PM_REMOVE))
         {
             TranslateMessage(&msg);
             DispatchMessage(&msg);
@@ -104,7 +200,12 @@ namespace FischiEngine
 
     bool WindowsWindow::OnEvent(Event* event)
     {
-        return false;
+        if (event->GetEventType() == EventType::WindowClose && dynamic_cast<WindowCloseEvent*>(event)->GetWindowHandle() == m_WindowHandle)
+        {
+            Close();
+            return true;
+        }
+        return OnEventHandler(event);
     }
 }
 #endif

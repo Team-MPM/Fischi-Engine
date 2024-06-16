@@ -16,7 +16,7 @@ namespace FischiEngine
             uint32_t Width = 480, Height = 270;
             uint32_t X = 100, Y = 100;
             std::filesystem::path Icon = L"Resources/Icons/Icon.ico";
-            bool Decorated = true, Fullscreen = false, VSync = false;
+            bool Decorated = true, Fullscreen = false, Maximized = false, Minimized = false, VSync = false;
         };
 
         virtual ~Window() = default;
@@ -28,11 +28,12 @@ namespace FischiEngine
         
         virtual bool OnEventHandler(Event* event);
 
+        virtual bool IsOpen() const = 0;
         virtual void Close() = 0;
-        
+        virtual void Minimize() = 0;
         virtual void Maximize() = 0;
-		virtual void CenterWindow() = 0;
-
+        virtual void SetFullscreen(bool fullscreen) = 0;
+        
         virtual std::pair<uint32_t, uint32_t> GetSize() const = 0;
 		virtual std::pair<uint32_t, uint32_t> GetPos() const = 0;
 
