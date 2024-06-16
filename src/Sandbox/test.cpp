@@ -19,6 +19,7 @@ public:
         spec.Decorated = true;
         spec.Fullscreen = false;
         m_Windows.push_back(Window::Create(spec));
+        m_Windows.push_back(Window::Create(spec));
     }
     
     bool OnEvent(Event* event) override

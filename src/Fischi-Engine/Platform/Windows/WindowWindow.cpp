@@ -12,17 +12,41 @@ namespace FischiEngine
     {
         switch (msg)
         {
-        // case WM_CREATE:
-        //     break;
-        // case WM_DESTROY:
-        //     break;
+        case WM_CREATE:
+        case WM_DESTROY:
+        case WM_ENTERSIZEMOVE:
+        case WM_EXITSIZEMOVE:
+        case WM_MOVE:
+            break;
+        case WM_NCLBUTTONDOWN:
+            if (wParam == HTCAPTION || wParam == HTLEFT || wParam == HTRIGHT || wParam == HTTOP || wParam == HTBOTTOM ||
+                wParam == HTTOPLEFT || wParam == HTTOPRIGHT || wParam == HTBOTTOMLEFT || wParam == HTBOTTOMRIGHT)
+            {
+                int edge = -1;
+                if (wParam == HTTOP) edge = WMSZ_TOP;
+                else if (wParam == HTBOTTOM) edge = WMSZ_BOTTOM;
+                else if (wParam == HTLEFT) edge = WMSZ_LEFT;
+                else if (wParam == HTRIGHT) edge = WMSZ_RIGHT;
+                else if (wParam == HTTOPLEFT) edge = WMSZ_TOPLEFT;
+                else if (wParam == HTTOPRIGHT) edge = WMSZ_TOPRIGHT;
+                else if (wParam == HTBOTTOMLEFT) edge = WMSZ_BOTTOMLEFT;
+                else if (wParam == HTBOTTOMRIGHT) edge = WMSZ_BOTTOMRIGHT;
+
+                if (edge != -1)
+                {
+                    SendMessage(hwnd, WM_SYSCOMMAND, SC_SIZE + edge, lParam);
+                    return 0;
+                }
+            }
+            return DefWindowProc(hwnd, msg, wParam, lParam);
         case WM_CLOSE:
             Application::Get()->GetEventQueue().PushEvent(WindowCloseEvent(hwnd));
             break;
-        // case WM_MOVE:
-        //     break;
-        // case WM_SIZE:
-        //     break;
+        case WM_SIZE:
+            RECT rect;
+            GetWindowRect(hwnd, &rect);
+            Application::Get()->GetEventQueue().PushEvent(WindowResizeEvent(hwnd, rect.right - rect.left, rect.bottom - rect.top));
+            return 0;
         case WM_KEYDOWN:
             Application::Get()->GetEventQueue().PushEvent(KeyPressedEvent(hwnd, WindowInupt::TranslateKeyCode(wParam), 0));
             break;
@@ -60,72 +84,23 @@ namespace FischiEngine
     }
     
     WindowsWindow::WindowsWindow(const Spec& spec)
-        : Window(spec)
+        : Window(spec), m_StopFlag(false)
     {
-        m_WindowClass = {};
-        m_WindowClass.cbSize = sizeof(WNDCLASSEX);
-        m_WindowClass.style = CS_HREDRAW | CS_VREDRAW;
-        m_WindowClass.lpfnWndProc = WindowProcedure;
-        m_WindowClass.hInstance = WindowsPlatformState::hInstance;
-        m_WindowClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-        m_WindowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
-        m_WindowClass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-        m_WindowClass.lpszClassName = spec.Title.c_str();
-        m_WindowClass.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
-
-        if (!RegisterClassEx(&m_WindowClass))
-        {
-            Log::Error("Window registration failed");
-            FISCHI_DEBUG_BREAK();
-            return;
-        }
-
-        LONG style = {};
-        style |= WS_TABSTOP;
-        if (spec.Minimized)
-            style |= WS_MINIMIZE;
-        else
-            style |= WS_VISIBLE;
-        if (spec.Decorated)
-            style |= WS_OVERLAPPEDWINDOW;
-        else
-            style |= WS_POPUP;
-        if (spec.Maximized)
-            style |= WS_MAXIMIZE;
-        
-        m_WindowHandle = CreateWindowEx(
-            0,
-            spec.Title.c_str(),
-            spec.Title.c_str(),
-            style,
-            spec.X, spec.Y, spec.Width, spec.Height,
-            NULL, NULL, WindowsPlatformState::hInstance, NULL
-        );
-
-        if (m_WindowHandle == NULL)
-        {
-            Log::Error("Window creation failed");
-            FISCHI_DEBUG_BREAK();
-            return;
-        }
-
-        GetWindowRect(m_WindowHandle, &m_OldWindowRect);
-
-        if (spec.Fullscreen)
-            SetFullscreen(true);
-
-        ShowWindow(m_WindowHandle, SW_SHOW);
-        UpdateWindow(m_WindowHandle);
+        m_WindowThread = std::thread(&WindowsWindow::WindowThread, this);
+        std::unique_lock lock(m_WindowStateMutex);
+        m_WindowCreated.wait(lock);
     }
 
     WindowsWindow::~WindowsWindow()
     {
+        m_StopFlag.store(true);
+        m_WindowThread.join();
         Close();
-        UnregisterClass(m_WindowClass.lpszClassName, m_WindowClass.hInstance);
     }
 
     void WindowsWindow::SetFullscreen(bool fullscreen)
     {
+        std::lock_guard lock(m_Mutex);
         if (fullscreen)
         {
             GetWindowRect(m_WindowHandle, &m_OldWindowRect);
@@ -154,13 +129,94 @@ namespace FischiEngine
         }
     }
 
+    void WindowsWindow::WindowThread()
+    {
+        static WNDCLASSEX windowClass = {};
+        windowClass.cbSize = sizeof(WNDCLASSEX);
+        windowClass.style = CS_HREDRAW | CS_VREDRAW;
+        windowClass.lpfnWndProc = WindowProcedure;
+        windowClass.hInstance = WindowsPlatformState::hInstance;
+        windowClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+        windowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
+        windowClass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+        windowClass.lpszClassName = L"Fischi Engine";
+        windowClass.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
+
+        WNDCLASSEX existingWindowClass = {};
+        if (!GetClassInfoEx(WindowsPlatformState::hInstance, L"Fischi Engine", &existingWindowClass))
+        {
+            DWORD error = GetLastError();
+            if (error == ERROR_CLASS_DOES_NOT_EXIST)
+            {
+                if (!RegisterClassEx(&windowClass))
+                {
+                    Log::Error("Window registration failed");
+                    FISCHI_DEBUG_BREAK();
+                    return;
+                }
+            }
+        }
+
+        LONG style = {};
+        style |= WS_TABSTOP;
+        if (m_Spec.Minimized)
+            style |= WS_MINIMIZE;
+        else
+            style |= WS_VISIBLE;
+        if (m_Spec.Decorated)
+            style |= WS_OVERLAPPEDWINDOW;
+        else
+            style |= WS_POPUP;
+        if (m_Spec.Maximized)
+            style |= WS_MAXIMIZE;
+
+        m_WindowHandle = CreateWindowEx(
+            0,
+            L"Fischi Engine",
+            m_Spec.Title.c_str(),
+            style,
+            m_Spec.X, m_Spec.Y, m_Spec.Width, m_Spec.Height,
+            NULL, NULL, WindowsPlatformState::hInstance, NULL
+        );
+
+        if (m_WindowHandle == NULL)
+        {
+            Log::Error("Window creation failed");
+            FISCHI_DEBUG_BREAK();
+            return;
+        }
+
+        GetWindowRect(m_WindowHandle, &m_OldWindowRect);
+
+        if (m_Spec.Fullscreen)
+            SetFullscreen(true);
+
+        ShowWindow(m_WindowHandle, SW_SHOW);
+        UpdateWindow(m_WindowHandle);
+
+        Log::Info("WindowThread Thread started for HWND {0}!", static_cast<void*>(m_WindowHandle));
+
+        {
+            std::unique_lock windowStateLock(m_WindowStateMutex);
+            m_WindowCreated.notify_all();
+        }
+
+        MSG msg = {};
+        while (!m_StopFlag.load() && GetMessage(&msg, m_WindowHandle, 0, 0))
+        {
+            std::lock_guard lock(m_Mutex);
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+
+        DestroyWindow(m_WindowHandle);
+        m_WindowHandle = NULL;
+    }
+
     void WindowsWindow::Close()
     {
-        if (m_WindowHandle != NULL)
-        {
-            DestroyWindow(m_WindowHandle);
-            m_WindowHandle = NULL;
-        }
+        m_StopFlag.store(true);
+        SendMessage(m_WindowHandle, WM_CLOSE, 0, 0);
     }
 
     bool WindowsWindow::IsOpen() const
@@ -170,11 +226,13 @@ namespace FischiEngine
 
     void WindowsWindow::Minimize()
     {
+        std::lock_guard lock(m_Mutex);
         ShowWindow(m_WindowHandle, SW_MINIMIZE);
     }
 
     void WindowsWindow::Maximize()
     {
+        std::lock_guard lock(m_Mutex);
         ShowWindow(m_WindowHandle, SW_MAXIMIZE);
     }
     
@@ -190,12 +248,7 @@ namespace FischiEngine
 
     void WindowsWindow::OnUpdate()
     {
-        MSG msg = {};
-        while (PeekMessage(&msg, m_WindowHandle, 0, 0, PM_REMOVE))
-        {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        }
+        
     }
 
     bool WindowsWindow::OnEvent(Event* event)

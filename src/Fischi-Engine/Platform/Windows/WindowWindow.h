@@ -23,9 +23,14 @@ namespace FischiEngine
 
         HWND GetWindowHandle() const { return m_WindowHandle; }
         RECT GetOldWindowRect() const { return m_OldWindowRect; }
+
+        void WindowThread();
     private:
-        WNDCLASSEX m_WindowClass;
         HWND m_WindowHandle;
         RECT m_OldWindowRect;
+        std::thread m_WindowThread;
+        std::atomic<bool> m_StopFlag;
+        std::condition_variable m_WindowCreated;
+        mutable std::mutex m_Mutex, m_WindowStateMutex;
     };
 }

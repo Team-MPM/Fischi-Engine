@@ -25,7 +25,8 @@ namespace FischiEngine
         MouseButtonReleasedEvent,
         KeyPressedEvent,
         KeyReleasedEvent,
-        WindowCloseEvent>();
+        WindowCloseEvent,
+        WindowResizeEvent>();
 
     EventQueue::EventQueue()
         : m_Allocator(Memory::CreateLinearBlockAllocator(s_MaxEventSize, 10000, MemoryUsage::Application))
