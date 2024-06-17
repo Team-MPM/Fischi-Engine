@@ -4,9 +4,9 @@
 
 namespace FischiEngine
 {
-    std::unordered_map<MemoryUsage, size_t> Memory::m_MemoryUsages;
-    std::unordered_map<MemoryType, size_t> Memory::m_MemoryTypes;
-    std::mutex Memory::m_Mutex;
+    std::unordered_map<MemoryUsage, size_t> Memory::m_MemoryUsages = std::unordered_map<MemoryUsage, size_t>();
+    std::unordered_map<MemoryType, size_t> Memory::m_MemoryTypes = std::unordered_map<MemoryType, size_t>();
+    std::mutex Memory::m_Mutex = std::mutex();
 
     void Memory::LogMemoryUsage()
     {

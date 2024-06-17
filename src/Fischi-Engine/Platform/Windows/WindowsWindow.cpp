@@ -1,10 +1,11 @@
-﻿#include "WindowInupt.h"
+﻿#include "Core/Core.h"
+#ifdef FISCHI_PLATFORM_WINDOWS
+#include "WindowInupt.h"
 #include "Core/Application.h"
 #include "Core/Event/EventDefs.h"
-#ifdef FISCHI_PLATFORM_WINDOWS
 #include "WindowsPlatform.h"
 #include "Core/Log.h"
-#include "WindowWindow.h"
+#include "WindowsWindow.h"
 
 namespace FischiEngine
 {

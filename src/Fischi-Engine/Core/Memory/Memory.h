@@ -70,9 +70,11 @@ namespace FischiEngine
             auto deleter = [usage](const T* ptr)
             {
                 {
+                    #ifndef FISCHI_PLATFORM_LINUX // TOTO: WTF IS THIS BULLSHIT NOT WORKING ON LINUX ??
                     std::lock_guard lock(m_Mutex);
                     m_MemoryTypes[MemoryType::Shared] -= sizeof(T);
                     m_MemoryUsages[usage] -= sizeof(T);
+                    #endif
                 }
                 delete ptr;
             };

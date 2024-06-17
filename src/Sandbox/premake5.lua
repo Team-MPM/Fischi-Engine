@@ -31,6 +31,11 @@ project "Sandbox"
           "FISCHI_PLATFORM_WINDOWS"
       }
 
+   filter "system:linux"
+      defines {
+          "FISCHI_PLATFORM_LINUX"
+      }
+
    filter "configurations:Debug"
       defines { "FISCHI_DEBUG" }
       symbols "On"

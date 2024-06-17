@@ -1,5 +1,5 @@
 #include "Core/Application.h"
-#include "Platform/Windows/WindowWindow.h"
+#include "Core/Window.h"
 
 using namespace FischiEngine;
 

@@ -1,7 +1,13 @@
 ﻿#include "Window.h"
 
+#include "Core/Core.h"
+
 #ifdef FISCHI_PLATFORM_WINDOWS
-#include "Platform/Windows/WindowWindow.h"
+#include "Platform/Windows/WindowsWindow.h"
+#endif
+
+#ifdef FISCHI_PLATFORM_LINUX
+#include "Platform/Linux/X11Window.h"
 #endif
 
 namespace FischiEngine
@@ -10,6 +16,10 @@ namespace FischiEngine
     {
         #ifdef FISCHI_PLATFORM_WINDOWS
         return Memory::CreateShared<WindowsWindow>(MemoryUsage::Window, spec);
+        #elif defined(FISCHI_PLATFORM_LINUX)
+        return Memory::CreateShared<X11Window>(MemoryUsage::Window, spec);
+        #else
+        #error Unsupported Platform
         #endif
     }
 

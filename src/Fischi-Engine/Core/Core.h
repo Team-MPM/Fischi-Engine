@@ -10,7 +10,9 @@
     #endif
     #define _CRT_SECURE_NO_WARNINGS
 #elif defined(__linux__)
-    #define FISCHI_PLATFORM_LINUX
+    #ifndef FISCHI_PLATFORM_LINUX
+        #define FISCHI_PLATFORM_LINUX
+    #endif
 #elif defined(__APPLE__) || defined(__MACH__)
     #define FISCHI_PLATFORM_MACOS
     #error "MacOS is not supported!"
@@ -40,7 +42,7 @@
 #elif defined(FISCHI_PLATFORM_WINDOWS)
     #define FISCHI_DEBUG_BREAK() __debugbreak()
 #elif defined(FISCHI_PLATFORM_LINUX)
-    #include <signal.h>
+    #include <csignal>
     #define FISCHI_DEBUG_BREAK() raise(SIGTRAP)
 #else
     #error "Debug break not supported on this platform!"

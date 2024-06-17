@@ -1,3 +1,4 @@
+#include "Core/Core.h"
 #ifdef FISCHI_PLATFORM_WINDOWS
 #include "Platform/Platform.h"
 #include "WindowsPlatform.h"

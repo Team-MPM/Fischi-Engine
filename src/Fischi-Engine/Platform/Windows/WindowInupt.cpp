@@ -1,4 +1,6 @@
-﻿#include "WindowInupt.h"
+﻿#include "Core/Core.h"
+#ifdef FISCHI_PLATFORM_WINDOWS
+#include "WindowInupt.h"
 
 #include "Core/Log.h"
 
@@ -134,3 +136,4 @@ namespace FischiEngine
         }
     }
 }
+#endif
