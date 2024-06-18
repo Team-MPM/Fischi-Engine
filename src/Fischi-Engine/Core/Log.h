@@ -4,6 +4,9 @@
 #include <spdlog/fmt/fmt.h>
 #include <spdlog/fmt/bundled/core.h>
 
+#define oldNone None
+#undef None
+
 template <typename... Args>
 using format_string_t = fmt::format_string<Args...>;
 
@@ -94,3 +97,5 @@ namespace fmt {
         }
     };
 }
+
+#define None oldNone

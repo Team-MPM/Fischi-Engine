@@ -31,6 +31,18 @@ project "Sandbox"
           "FISCHI_PLATFORM_WINDOWS"
       }
 
+      links {
+          "dl",
+          "pthread",
+          "Xrandr",
+          "Xi",
+          "Xinerama",
+          "Xcursor",
+          "Xxf86vm",
+          "X11",
+          "wayland-client"
+      }
+
    filter "system:linux"
       defines {
           "FISCHI_PLATFORM_LINUX"

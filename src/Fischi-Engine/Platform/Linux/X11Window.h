@@ -1,5 +1,8 @@
+#pragma once
 
+#include <X11/Xlib.h>
 #include "Core/Window.h"
+
 
 namespace FischiEngine {
     class X11Window final : public Window {
@@ -15,5 +18,7 @@ namespace FischiEngine {
         bool IsOpen() const override;
         void Minimize() override;
         void SetFullscreen(bool fullscreen) override;
+    private:
+        ::Window m_Window;
     };
 }

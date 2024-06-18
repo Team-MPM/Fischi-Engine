@@ -35,6 +35,18 @@ project "Fischi-Engine"
             "FISCHI_PLATFORM_LINUX"
         }
 
+        links {
+            "dl",
+            "pthread",
+            "Xrandr",
+            "Xi",
+            "Xinerama",
+            "Xcursor",
+            "Xxf86vm",
+            "X11",
+            "wayland-client"
+        }
+
    filter "configurations:Debug"
       defines { "FISCHI_DEBUG" }
       symbols "On"

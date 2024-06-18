@@ -5,6 +5,9 @@
 #include "Core/Core.h"
 #include "Core/KeyCodes.h"
 
+#define oldNone None
+#undef None
+
 namespace FischiEngine
 {
 	enum class EventType
@@ -50,3 +53,5 @@ namespace FischiEngine
 		}
 	};
 }
+
+#define None oldNone
