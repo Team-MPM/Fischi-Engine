@@ -12,7 +12,8 @@ namespace FischiEngine
     public:
         struct Spec
         {
-            std::wstring Title = L"Fischi Engine";
+            std::wstring WTitle = L"Fischi Engine";
+            std::string Title = "Fischi Engine";
             uint32_t Width = 480, Height = 270;
             uint32_t X = 100, Y = 100;
             std::filesystem::path Icon = L"Resources/Icons/Icon.ico";

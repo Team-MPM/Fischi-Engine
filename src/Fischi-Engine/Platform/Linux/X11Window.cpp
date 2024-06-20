@@ -2,11 +2,19 @@
 #ifdef FISCHI_PLATFORM_LINUX
 
 #include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/Xos.h>
+#include <X11/X.h>
 
 #include "X11Window.h"
 #include "LinuxPlatform.h"
-#include "Core/Log.h"
+#include "Core/Application.h"
+#include "Core/Event/EventDefs.h"
+#include "LinuxInput.h"
+#include "Utils/String.h"
 
+// Resources:
+// http://mech.math.msu.su/~vvb/2course/Borisenko/CppProjects/GWindow/xintro.html
 
 namespace FischiEngine {
 
@@ -16,13 +24,19 @@ namespace FischiEngine {
         m_Window = XCreateSimpleWindow(display, RootWindow(display, screen), spec.X, spec.Y, spec.Width, spec.Height, 1,
                                      BlackPixel(display, screen), WhitePixel(display, screen));
 
-        XSelectInput(display, m_Window, ExposureMask | KeyPressMask);
+        XSetStandardProperties(display, m_Window, spec.Title.c_str(), spec.Title.c_str(), None, nullptr, 0, nullptr);
+
+        XSelectInput(display, m_Window, ExposureMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask | StructureNotifyMask | FocusChangeMask | EnterWindowMask | LeaveWindowMask | ClientMessage);
         XMapWindow(display, m_Window);
+
+        m_WmDeleteMessage = XInternAtom(display, "WM_DELETE_WINDOW", False);
+        XSetWMProtocols(display, m_Window, &m_WmDeleteMessage, 1);
+
+        m_IsOpen = true;
     }
 
     X11Window::~X11Window() {
         XDestroyWindow(LinuxPlatformState::X11Display, m_Window);
-        XCloseDisplay(LinuxPlatformState::X11Display);
     }
 
     void X11Window::Maximize() {
@@ -60,22 +74,79 @@ namespace FischiEngine {
     void X11Window::OnUpdate() {
         auto display = LinuxPlatformState::X11Display;
         XEvent event;
-        while (XPending(display)) {
-            XNextEvent(display, &event);
-            // Handle events here
+        while(XCheckTypedWindowEvent(display, m_Window, ClientMessage, &event)){
+            if (event.xclient.data.l[0] == m_WmDeleteMessage) {
+                Application::Get()->GetEventQueue().PushEvent(WindowCloseEvent((void*)m_Window));
+                return;
+            }
+        }
+
+        while (XCheckWindowEvent(display, m_Window, ExposureMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask | StructureNotifyMask | FocusChangeMask | EnterWindowMask | LeaveWindowMask, &event)) {
+            switch (event.type) {
+            case ConfigureNotify:
+                Application::Get()->GetEventQueue().PushEvent(WindowResizeEvent((void*)m_Window, event.xconfigure.width, event.xconfigure.height));
+                break;
+            case MotionNotify:
+                Application::Get()->GetEventQueue().PushEvent(MouseMovedEvent((void*)m_Window, event.xmotion.x, event.xmotion.y));
+                break;
+                case ButtonPress:
+                    switch (event.xbutton.button) {
+                        case 1:
+                            Application::Get()->GetEventQueue().PushEvent(MouseButtonPressedEvent((void*)m_Window, MouseButton::Left));
+                            break;
+                        case 2:
+                            Application::Get()->GetEventQueue().PushEvent(MouseButtonPressedEvent((void*)m_Window, MouseButton::Middle));
+                            break;
+                        case 3:
+                            Application::Get()->GetEventQueue().PushEvent(MouseButtonPressedEvent((void*)m_Window, MouseButton::Right));
+                            break;
+                        case 4:
+                            Application::Get()->GetEventQueue().PushEvent(MouseScrolledEvent((void*)m_Window, 0, 1));
+                            break;
+                        case 5:
+                            Application::Get()->GetEventQueue().PushEvent(MouseScrolledEvent((void*)m_Window, 0, -1));
+                            break;
+                    }
+                    break;
+                case ButtonRelease:
+                    switch (event.xbutton.button) {
+                        case 1:
+                            Application::Get()->GetEventQueue().PushEvent(MouseButtonReleasedEvent((void*)m_Window, MouseButton::Left));
+                            break;
+                        case 2:
+                            Application::Get()->GetEventQueue().PushEvent(MouseButtonReleasedEvent((void*)m_Window, MouseButton::Middle));
+                            break;
+                        case 3:
+                            Application::Get()->GetEventQueue().PushEvent(MouseButtonReleasedEvent((void*)m_Window, MouseButton::Right));
+                            break;
+                    }
+                    break;
+            case KeyPress:
+                Application::Get()->GetEventQueue().PushEvent(KeyPressedEvent((void*)m_Window, LinuxInput::ParseX11KeyCode(XLookupKeysym(&event.xkey, 0)), 0));
+                break;
+            case KeyRelease:
+                Application::Get()->GetEventQueue().PushEvent(KeyReleasedEvent((void*)m_Window, LinuxInput::ParseX11KeyCode(XLookupKeysym(&event.xkey, 0))));
+                break;
+            }
         }
     }
 
     bool X11Window::OnEvent(Event *event) {
-        return false;
+        if (event->GetEventType() == EventType::WindowClose && dynamic_cast<WindowCloseEvent*>(event)->GetWindowHandle() == (void*)m_Window)
+        {
+            Close();
+            return true;
+        }
+        return OnEventHandler(event);
     }
 
     void X11Window::Close() {
         XDestroyWindow(LinuxPlatformState::X11Display, m_Window);
+        m_IsOpen = false;
     }
 
     bool X11Window::IsOpen() const {
-        return true;
+        return m_IsOpen;
     }
 
     void X11Window::Minimize() {

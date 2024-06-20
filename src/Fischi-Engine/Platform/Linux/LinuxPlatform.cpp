@@ -36,7 +36,11 @@ namespace FischiEngine
 
     void Platform::Shutdown()
     {
+        if (LinuxPlatformState::UseWayland) {
 
+        } else {
+            XCloseDisplay(LinuxPlatformState::X11Display);
+        }
     }
 }
 

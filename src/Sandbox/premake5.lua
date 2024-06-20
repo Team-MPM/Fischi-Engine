@@ -31,6 +31,11 @@ project "Sandbox"
           "FISCHI_PLATFORM_WINDOWS"
       }
 
+   filter "system:linux"
+      defines {
+          "FISCHI_PLATFORM_LINUX"
+      }
+
       links {
           "dl",
           "pthread",
@@ -40,12 +45,7 @@ project "Sandbox"
           "Xcursor",
           "Xxf86vm",
           "X11",
-          "wayland-client"
-      }
-
-   filter "system:linux"
-      defines {
-          "FISCHI_PLATFORM_LINUX"
+          "wayland-client",
       }
 
    filter "configurations:Debug"

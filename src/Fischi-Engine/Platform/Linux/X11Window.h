@@ -20,5 +20,7 @@ namespace FischiEngine {
         void SetFullscreen(bool fullscreen) override;
     private:
         ::Window m_Window;
+        Atom m_WmDeleteMessage;
+        bool m_IsOpen;
     };
 }

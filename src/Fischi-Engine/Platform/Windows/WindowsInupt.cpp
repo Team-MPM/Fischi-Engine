@@ -53,7 +53,7 @@ namespace FischiEngine
         case VK_MULTIPLY: return KeyCode::NumpadMultiply;
         case VK_SUBTRACT: return KeyCode::NumpadSubtract;
         case VK_ADD: return KeyCode::NumpadAdd;
-        case VK_RETURN: return KeyCode::NumpadEnter;
+        case VK_RETURN: return KeyCode::Enter;
         case VK_BACK: return KeyCode::Backspace;
         case VK_TAB: return KeyCode::Tab;
         case VK_CLEAR: return KeyCode::Clear;

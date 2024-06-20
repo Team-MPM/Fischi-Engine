@@ -27,6 +27,7 @@
 ### Linux
 
 - build: just use make, you know the drill
+- dependencies: ```sudo apt-get install libx11-dev libxrandr-dev libxi-dev libxinerama-dev libxcursor-dev libxxf86vm-dev libx11-dev libwayland-dev```
 
 ### Linux via SSH
 
