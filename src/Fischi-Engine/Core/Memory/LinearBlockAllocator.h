@@ -7,7 +7,7 @@
 
 namespace FischiEngine
 {
-    class LinearBlockAllocator final
+    class FISCHI_API LinearBlockAllocator final
     {
     public:
         LinearBlockAllocator(size_t blockSize, size_t blockCount, std::function<void()> deallocateCallback);

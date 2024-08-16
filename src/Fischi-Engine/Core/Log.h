@@ -4,6 +4,8 @@
 #include <spdlog/fmt/fmt.h>
 #include <spdlog/fmt/bundled/core.h>
 
+#include "Core.h"
+
 #define oldNone None
 #undef None
 
@@ -12,7 +14,7 @@ using format_string_t = fmt::format_string<Args...>;
 
 namespace FischiEngine
 {
-    class Log
+    class FISCHI_API Log
     {
     public:
         enum class Level

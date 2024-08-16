@@ -7,7 +7,7 @@
 
 namespace FischiEngine
 {
-    class Window
+    class FISCHI_API Window
     {
     public:
         struct Spec

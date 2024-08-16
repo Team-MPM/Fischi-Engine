@@ -2,7 +2,7 @@
 
 namespace FischiEngine
 {
-    class Platform
+    class FISCHI_API Platform
     {
     public:
         static void Init();

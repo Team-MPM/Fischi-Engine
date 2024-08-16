@@ -1,64 +1,67 @@
 project "Fischi-Engine"
-   kind "StaticLib"
-   language "C++"
-   cppdialect "C++20"
-   staticruntime "off"
+kind "SharedLib"
+language "C++"
+cppdialect "C++20"
 
-   targetdir ("%{wks.location}/bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}")
-   objdir ("%{wks.location}/obj/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}")
+targetdir("%{wks.location}/bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}")
+objdir("%{wks.location}/obj/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}")
 
-   files { 
-      "**.h", 
-      "**.c",
-      "**.cpp"
-   }
+files {
+    "**.h",
+    "**.c",
+    "**.cpp"
+}
 
-   includedirs {
-      ".",
-      "%{wks.location}/src",
-      "%{wks.location}/dependencies/spdlog/include",
-   }
+includedirs {
+    ".",
+    "%{wks.location}/src",
+    "%{wks.location}/dependencies/spdlog/include",
+}
 
-   links{
+links {
 
-   }
+}
 
-   filter "system:windows"
-      systemversion "latest"
+defines {
+    "FISCHI_BUILD_DLL"
+}
 
-      defines {
-          "FISCHI_PLATFORM_WINDOWS"
-      }
+filter "system:windows"
+    systemversion "latest"
+    
+    defines {
+        "FISCHI_PLATFORM_WINDOWS"
+    }
+    
+filter "system:linux"
+    defines {
+        "FISCHI_PLATFORM_LINUX"
+    }
+    
+    linkoptions {
+        "-ldl",
+        "-lpthread",
+        "-lXrandr",
+        "-lXi",
+        "-lXinerama",
+        "-lXcursor",
+        "-lXxf86vm",
+        "-lX11",
+        "-lwayland-client"
+    }
 
-   filter "system:linux"
-        defines {
-            "FISCHI_PLATFORM_LINUX"
-        }
+filter "configurations:Debug"
+    defines { "FISCHI_DEBUG" }
+    symbols "On"
 
-        linkoptions {
-            "-ldl",
-            "-lpthread",
-            "-lXrandr",
-            "-lXi",
-            "-lXinerama",
-            "-lXcursor",
-            "-lXxf86vm",
-            "-lX11",
-            "-lwayland-client"
-        }
+filter "configurations:Release"
+    defines { "FISCHI_RELEASE" }
+    optimize "On"
 
-   filter "configurations:Debug"
-      defines { "FISCHI_DEBUG" }
-      symbols "On"
+filter "configurations:Dist"
+    defines { "FISCHI_DIST" }
+    optimize "On"
 
-   filter "configurations:Release"
-      defines { "FISCHI_RELEASE" }
-      optimize "On"
-
-   filter "configurations:Dist"
-      defines { "FISCHI_DIST" }
-      optimize "On"
-
-      postbuildcommands {
-         "{COPY} %{wks.location}/resources %{cfg.targetdir}/resources"
-      }
+    postbuildcommands {
+        "{COPY} %{wks.location}/resources %{cfg.targetdir}/resources"
+    }

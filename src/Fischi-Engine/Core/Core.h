@@ -3,6 +3,11 @@
 #include <cstdint>
 #include <memory>
 
+// Warning
+
+// classes from stdlib need to have dll-interface to be used by clients
+#pragma warning(disable: 4251)
+
 // Detect Platform
 #if defined(_WIN32) || defined(_WIN64)
     #ifndef FISCHI_PLATFORM_WINDOWS
@@ -33,6 +38,24 @@
     #error "Unknown compiler!"
 #endif
 
+// Dll Export/Import
+#if defined(FISCHI_COMPILER_MSVC)
+    #if defined(FISCHI_BUILD_DLL)
+        #define FISCHI_API __declspec(dllexport)
+    #else
+        #define FISCHI_API __declspec(dllimport)
+    #endif
+#elif defined(FISCHI_COMPILER_GCC) || defined(FISCHI_COMPILER_CLANG)
+    #if defined(FISCHI_BUILD_DLL)
+        #define FISCHI_API __attribute__((visibility("default")))
+    #else
+        #define FISCHI_API
+    #endif
+#else
+    #define FISCHI_API 
+    #warning "FISCHI_API defined empty, add support for whatever your compiler need!"
+#endif
+
 // Define common macros
 #define BIT(x) (1 << x)
 
@@ -48,5 +71,4 @@
     #error "Debug break not supported on this platform!"
 #endif
 
-// Define Abort
 #define FISCHI_ABORT() Log::Fatal("Application was aborted at: {0}: {1}", __FILE__, __LINE__); abort()

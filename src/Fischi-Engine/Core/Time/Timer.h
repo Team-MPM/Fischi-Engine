@@ -6,34 +6,27 @@
 
 namespace FischiEngine
 {
-    class Timer
+    class FISCHI_API Timer
     {
     public:
-        explicit Timer() { Reset(); }
-        void Reset() { m_Start = std::chrono::high_resolution_clock::now(); }
-        
-        float Elapsed() const
-        {
-            return static_cast<float>(std::chrono::duration_cast<std::chrono::nanoseconds>(
-                std::chrono::high_resolution_clock::now() - m_Start).count());
-        }
+        explicit Timer();
+        void Reset();
 
-        float ElapsedMillis() const { return Elapsed() * 0.001f * 0.001f; }
-        float ElapsedSeconds() const { return Elapsed() * 0.001f * 0.001f * 0.001f; }
+        float Elapsed() const;
+
+        float ElapsedMillis() const;
+        float ElapsedSeconds() const;
+
     private:
         std::chrono::time_point<std::chrono::high_resolution_clock> m_Start;
     };
 
-    class ScopedTimer
+    class FISCHI_API ScopedTimer
 	{
 	public:
-		explicit ScopedTimer(std::string name)
-			: m_Name(std::move(name)) {}
-		~ScopedTimer()
-		{
-			float time = m_Timer.ElapsedMillis();
-			Log::Info("[TIMER] {0} - {1}ms", m_Name, time);
-		}
+		explicit ScopedTimer(std::string name);
+		~ScopedTimer();
+
 	private:
 		std::string m_Name;
 		Timer m_Timer;

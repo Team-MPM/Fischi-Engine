@@ -1,6 +1,6 @@
 ﻿#include "Core/Core.h"
 #ifdef FISCHI_PLATFORM_WINDOWS
-#include "WindowInupt.h"
+#include "WindowsInupt.h"
 
 #include "Core/Log.h"
 

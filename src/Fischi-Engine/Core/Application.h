@@ -9,14 +9,14 @@
 
 namespace FischiEngine
 {
-    struct ApplicationConfig
+    struct FISCHI_API ApplicationConfig
     {
         const char* Name = nullptr;
         const char* Version = nullptr;
         bool Standalone;
     };
     
-    class Application
+    class FISCHI_API Application
     {
     public:
         explicit Application(const ApplicationConfig& config, int argc, char** argv);

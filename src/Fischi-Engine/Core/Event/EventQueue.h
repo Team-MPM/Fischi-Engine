@@ -8,7 +8,7 @@
 
 namespace FischiEngine
 {
-    class EventQueue
+    class FISCHI_API EventQueue
     {
     public:
         EventQueue();

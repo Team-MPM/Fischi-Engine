@@ -13,34 +13,35 @@
 namespace FischiEngine
 {
     static Application* s_ApplicationInstance = nullptr;
-    
+
     std::filesystem::path Application::DetectEngineInstallation()
     {
-        bool engineFound = false;
         std::filesystem::path enginePath;
-        
-        if (!engineFound && std::filesystem::exists("bin"))
+
+        if (std::filesystem::exists("bin"))
         {
             for (const auto& entry : std::filesystem::recursive_directory_iterator("bin"))
             {
-                if (entry.is_regular_file() &&(entry.path().filename() == "FischiEngine.lib" || entry.path().filename()== "libFischi-Engine.a"))
+                if (entry.is_regular_file() && (entry.path().filename() == "Fischi-Engine.dll" || entry.path().
+                    filename()
+                    == "libFischi-Engine.so"))
                 {
                     enginePath = std::filesystem::absolute(".");
-                    engineFound = true;
-                    break;
+                    return enginePath;
                 }
             }
         }
-        
-        if (!engineFound && std::filesystem::exists("../../bin"))
+
+        if (std::filesystem::exists("../../bin"))
         {
             for (const auto& entry : std::filesystem::recursive_directory_iterator("../../bin"))
             {
-                if (entry.is_regular_file() && (entry.path().filename() == "FischiEngine.lib" || entry.path().filename() =="libFischi-Engine.a"))
+                if (entry.is_regular_file() && (entry.path().filename() == "Fischi-Engine.dll" || entry.path().
+                    filename()
+                    == "libFischi-Engine.so"))
                 {
                     enginePath = std::filesystem::absolute("../../");
-                    engineFound = true;
-                    break;
+                    return enginePath;
                 }
             }
         }
@@ -48,20 +49,17 @@ namespace FischiEngine
         if (const char* envVarPath = std::getenv("FISCHI_ENGINE_PATH"); envVarPath != nullptr)
         {
             enginePath = std::filesystem::absolute(envVarPath);
-            engineFound = true;
+            return enginePath;
         }
-        
-        if (!engineFound)
-        {
-            std::cerr << "Engine installation not found! Exiting...\n";
-            FISCHI_ABORT();
-        }
-        
+
+        std::cerr << "Engine installation not found! Exiting...\n";
+        FISCHI_ABORT();
+
         return enginePath;
     }
 
     Application::Application(const ApplicationConfig& config, int argc, char** argv)
-        : m_Config(config), m_Windows(Memory::CreateVector<Shared<Window>>(MemoryUsage::Application))
+        : m_Config(config), m_Windows(Vector<Shared<Window>>())
     {
         s_ApplicationInstance = this;
         std::cout << "Starting Fischi Engine!\n";
@@ -71,7 +69,7 @@ namespace FischiEngine
 #ifdef FISCHI_DIST
         m_Config.Standalone = true;
 #endif
-        
+
         if (m_Config.Standalone)
         {
             m_EnginePath = std::filesystem::absolute(argv[0]).parent_path();
@@ -120,19 +118,18 @@ namespace FischiEngine
             FISCHI_ABORT();
             return;
         }
-        
+
         m_MainWindow = m_Windows[0];
-        
-        Memory::LogMemoryUsage();
-        
+
         while (true)
         {
             if (!m_MainWindow->IsOpen())
                 break;
-            
+
             //ScopedTimer timer("Frame");
-            //Log::Debug("Processing Events...");
-            for (Event* event = m_EventQueue.begin(); event < m_EventQueue.end(); event += EventQueue::GetMaxEventSize())
+
+            for (Event* event = m_EventQueue.begin(); event < m_EventQueue.end(); event +=
+                 EventQueue::GetMaxEventSize())
             {
                 Log::Trace("Event: {0}", event->ToString());
                 // TODO: Handle default events
@@ -154,7 +151,7 @@ namespace FischiEngine
                 window->OnUpdate();
             }
         }
-        
+
         OnShutdown();
     }
 

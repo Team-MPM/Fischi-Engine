@@ -1,6 +1,6 @@
 ﻿#include "Core/Core.h"
 #ifdef FISCHI_PLATFORM_WINDOWS
-#include "WindowInupt.h"
+#include "WindowsInupt.h"
 #include "Core/Application.h"
 #include "Core/Event/EventDefs.h"
 #include "WindowsPlatform.h"
@@ -46,13 +46,16 @@ namespace FischiEngine
         case WM_SIZE:
             RECT rect;
             GetWindowRect(hwnd, &rect);
-            Application::Get()->GetEventQueue().PushEvent(WindowResizeEvent(hwnd, rect.right - rect.left, rect.bottom - rect.top));
+            Application::Get()->GetEventQueue().PushEvent(
+                WindowResizeEvent(hwnd, rect.right - rect.left, rect.bottom - rect.top));
             return 0;
         case WM_KEYDOWN:
-            Application::Get()->GetEventQueue().PushEvent(KeyPressedEvent(hwnd, WindowInupt::TranslateKeyCode(wParam), 0));
+            Application::Get()->GetEventQueue().PushEvent(
+                KeyPressedEvent(hwnd, WindowInupt::TranslateKeyCode(wParam), 0));
             break;
         case WM_KEYUP:
-            Application::Get()->GetEventQueue().PushEvent(KeyReleasedEvent(hwnd, WindowInupt::TranslateKeyCode(wParam)));
+            Application::Get()->GetEventQueue().
+                                PushEvent(KeyReleasedEvent(hwnd, WindowInupt::TranslateKeyCode(wParam)));
             break;
         case WM_LBUTTONDOWN:
             Application::Get()->GetEventQueue().PushEvent(MouseButtonPressedEvent(hwnd, MouseButton::Left));
@@ -76,14 +79,15 @@ namespace FischiEngine
             Application::Get()->GetEventQueue().PushEvent(MouseMovedEvent(hwnd, LOWORD(lParam), HIWORD(lParam)));
             break;
         case WM_MOUSEWHEEL:
-            Application::Get()->GetEventQueue().PushEvent(MouseScrolledEvent(hwnd, 0.0f, 0.0f));//GET_WHEEL_DELTA_WPARAM(wParam)));
+            Application::Get()->GetEventQueue().PushEvent(MouseScrolledEvent(hwnd, 0.0f, 0.0f));
+        //GET_WHEEL_DELTA_WPARAM(wParam)));
             break;
         default:
             return DefWindowProc(hwnd, msg, wParam, lParam);
         }
         return 0;
     }
-    
+
     WindowsWindow::WindowsWindow(const Spec& spec)
         : Window(spec), m_StopFlag(false)
     {
@@ -174,7 +178,7 @@ namespace FischiEngine
         m_WindowHandle = CreateWindowEx(
             0,
             L"Fischi Engine",
-            m_Spec.Title.c_str(),
+            m_Spec.WTitle.c_str(),
             style,
             m_Spec.X, m_Spec.Y, m_Spec.Width, m_Spec.Height,
             NULL, NULL, WindowsPlatformState::hInstance, NULL
@@ -203,11 +207,14 @@ namespace FischiEngine
         }
 
         MSG msg = {};
-        while (!m_StopFlag.load() && GetMessage(&msg, m_WindowHandle, 0, 0))
+        while (GetMessage(&msg, m_WindowHandle, 0, 0))
         {
             std::lock_guard lock(m_Mutex);
             TranslateMessage(&msg);
             DispatchMessage(&msg);
+
+            if (m_StopFlag.load())
+                break;
         }
 
         DestroyWindow(m_WindowHandle);
@@ -236,7 +243,7 @@ namespace FischiEngine
         std::lock_guard lock(m_Mutex);
         ShowWindow(m_WindowHandle, SW_MAXIMIZE);
     }
-    
+
     std::pair<uint32_t, uint32_t> WindowsWindow::GetSize() const
     {
         return std::make_pair(0, 0);
@@ -249,15 +256,17 @@ namespace FischiEngine
 
     void WindowsWindow::OnUpdate()
     {
-        
     }
 
     bool WindowsWindow::OnEvent(Event* event)
     {
-        if (event->GetEventType() == EventType::WindowClose && dynamic_cast<WindowCloseEvent*>(event)->GetWindowHandle() == m_WindowHandle)
+        if (event->GetEventType() == EventType::WindowClose)
         {
-            Close();
-            return true;
+            if (static_cast<WindowCloseEvent*>(event)->GetWindowHandle() == m_WindowHandle)
+            {
+                Close();
+                return true;
+            }
         }
         return OnEventHandler(event);
     }
