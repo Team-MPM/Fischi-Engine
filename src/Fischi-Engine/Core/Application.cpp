@@ -75,7 +75,7 @@ namespace FischiEngine
         if (m_Config.Standalone)
         {
             m_EnginePath = std::filesystem::absolute(argv[0]).parent_path();
-            std::cout << "Loading Standalone Engine at: " << m_EnginePath.string() << "\n";
+            Log::Trace("Loading Standalone Engine at: {0}", m_EnginePath.string());
         }
         else
         {
