@@ -10,6 +10,8 @@
 #include "Platform/Platform.h"
 #include "Time/Timer.h"
 
+void init_vulkan_test();
+
 namespace FischiEngine
 {
     static Application* s_ApplicationInstance = nullptr;
@@ -101,7 +103,6 @@ namespace FischiEngine
 
         Platform::Init();
 
-        void init_vulkan_test();
         init_vulkan_test();
     }
 

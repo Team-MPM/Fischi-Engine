@@ -18,6 +18,7 @@ namespace FischiEngine {
         bool IsOpen() const override;
         void Minimize() override;
         void SetFullscreen(bool fullscreen) override;
+        ::Window GetNativeWindow() const;
     private:
         ::Window m_Window;
         Atom m_WmDeleteMessage;

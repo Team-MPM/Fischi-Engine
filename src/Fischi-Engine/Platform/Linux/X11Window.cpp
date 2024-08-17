@@ -149,6 +149,10 @@ namespace FischiEngine {
         return m_IsOpen;
     }
 
+    ::Window X11Window::GetNativeWindow() const {
+        return m_Window;
+    }
+
     void X11Window::Minimize() {
         auto display = LinuxPlatformState::X11Display;
         XIconifyWindow(display, m_Window, DefaultScreen(display));

@@ -19,10 +19,6 @@ includedirs {
     vulkan_sdk_path .. "/Include"
 }
 
-links {
-    vulkan_sdk_path .. "/Lib/vulkan-1"
-}
-
 defines {
     "FISCHI_BUILD_DLL"
 }
@@ -33,12 +29,17 @@ filter "system:windows"
     defines {
         "FISCHI_PLATFORM_WINDOWS"
     }
+
+    links {
+        vulkan_sdk_path .. "/Lib/shaderc_shared",
+        vulkan_sdk_path .. "/Lib/vulkan-1"
+    }
     
 filter "system:linux"
     defines {
         "FISCHI_PLATFORM_LINUX"
     }
-    
+
     linkoptions {
         "-ldl",
         "-lpthread",
@@ -48,32 +49,22 @@ filter "system:linux"
         "-lXcursor",
         "-lXxf86vm",
         "-lX11",
-        "-lwayland-client"
+        "-lwayland-client",
+        "-lvulkan",
+        "-lshaderc_shared"
     }
 
 filter "configurations:Debug"
     defines { "FISCHI_DEBUG" }
     symbols "On"
 
-    links {
-        vulkan_sdk_path .. "/Lib/shaderc_sharedd"
-    }
-
 filter "configurations:Release"
     defines { "FISCHI_RELEASE" }
     optimize "On"
 
-    links {
-        vulkan_sdk_path .. "/Lib/shaderc_sharedd"
-    }
-
 filter "configurations:Dist"
     defines { "FISCHI_DIST" }
     optimize "On"
-
-    links {
-        vulkan_sdk_path .. "/Lib/shaderc_shared"
-    }
 
     postbuildcommands {
         "{COPY} %{wks.location}/resources %{cfg.targetdir}/resources"
