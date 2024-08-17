@@ -16,10 +16,11 @@ includedirs {
     ".",
     "%{wks.location}/src",
     "%{wks.location}/dependencies/spdlog/include",
+    vulkan_sdk_path .. "/Include"
 }
 
 links {
-
+    vulkan_sdk_path .. "/Lib/vulkan-1"
 }
 
 defines {
@@ -54,13 +55,25 @@ filter "configurations:Debug"
     defines { "FISCHI_DEBUG" }
     symbols "On"
 
+    links {
+        vulkan_sdk_path .. "/Lib/shaderc_sharedd"
+    }
+
 filter "configurations:Release"
     defines { "FISCHI_RELEASE" }
     optimize "On"
 
+    links {
+        vulkan_sdk_path .. "/Lib/shaderc_sharedd"
+    }
+
 filter "configurations:Dist"
     defines { "FISCHI_DIST" }
     optimize "On"
+
+    links {
+        vulkan_sdk_path .. "/Lib/shaderc_shared"
+    }
 
     postbuildcommands {
         "{COPY} %{wks.location}/resources %{cfg.targetdir}/resources"

@@ -100,6 +100,9 @@ namespace FischiEngine
         Log::Trace("Successfully validated Application config!");
 
         Platform::Init();
+
+        void init_vulkan_test();
+        init_vulkan_test();
     }
 
     Application::~Application()
