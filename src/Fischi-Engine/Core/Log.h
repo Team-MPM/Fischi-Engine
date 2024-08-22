@@ -19,20 +19,20 @@ namespace FischiEngine
     public:
         enum class Level
         {
-            None = 0,
             Trace,
             Debug,
             Info,
             Warn,
-            Assert,
             Error,
-            Fatal
+            Fatal,
+            Off,
+            Assert
         };
         
         static void LogMessage(std::string_view message, Level level);
 
-        static void Init(std::filesystem::path logPath);
-
+        static void Init(std::filesystem::path logPath, Level level);
+        
         template <typename... Params>
         static void Trace(format_string_t<Params...> message, Params&& ... params)
         {

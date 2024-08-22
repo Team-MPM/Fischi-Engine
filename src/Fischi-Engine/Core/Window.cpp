@@ -1,6 +1,7 @@
 ﻿#include "Window.h"
 
 #include "Core/Core.h"
+#include "Platform/RenderPlatform.h"
 
 #ifdef FISCHI_PLATFORM_WINDOWS
 #include "Platform/Windows/WindowsWindow.h"
@@ -32,5 +33,7 @@ namespace FischiEngine
     Window::Window(const Spec& spec)
         : m_Spec(spec)
     {
+        const auto rp = RenderPlatform::Get(RenderPlatform::Type::Vulkan);
+        rp->Init();
     }
 }

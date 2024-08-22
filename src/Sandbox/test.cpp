@@ -42,7 +42,9 @@ int main(int argc, char** argv)
     ApplicationConfig config = {
         "Sandbox",
         "0.0.1",
-        false
+        false,
+        RenderPlatform::Type::Vulkan,
+        Log::Level::Trace
     };
 
     Sandbox app(config, argc, argv);

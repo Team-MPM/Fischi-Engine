@@ -10,10 +10,10 @@ namespace FischiEngine
 {
     static Shared<spdlog::logger> s_Logger;
     
-    void Log::Init(std::filesystem::path logPath)
+    void Log::Init(std::filesystem::path logPath, Level level)
     {
         const auto consoleSink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-        consoleSink->set_level(spdlog::level::trace);
+        consoleSink->set_level(static_cast<spdlog::level::level_enum>(level));
 
         const auto errorLogSink = Memory::CreateShared<spdlog::sinks::basic_file_sink_mt>
             (MemoryUsage::Application, std::filesystem::path(logPath).append("error.log").string());
@@ -40,8 +40,6 @@ namespace FischiEngine
     void Log::LogMessage(std::string_view message, Level level)
     {
         switch (level) {
-        case Level::None:
-            break;
         case Level::Trace:
             s_Logger->trace(message);
             break;
@@ -62,6 +60,8 @@ namespace FischiEngine
             break;
         case Level::Fatal:
             s_Logger->critical(message);
+            break;
+        case Level::Off:
             break;
         }
     }

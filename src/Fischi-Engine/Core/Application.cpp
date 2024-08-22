@@ -10,8 +10,6 @@
 #include "Platform/Platform.h"
 #include "Time/Timer.h"
 
-void init_vulkan_test();
-
 namespace FischiEngine
 {
     static Application* s_ApplicationInstance = nullptr;
@@ -83,7 +81,7 @@ namespace FischiEngine
         }
 
         const auto logPath = std::filesystem::path(m_EnginePath).append("logs");
-        Log::Init(logPath);
+        Log::Init(logPath, m_Config.LogLevel);
         Log::Trace("Engine installation found at: {0}", m_EnginePath.string());
         Log::Trace("Log path set to: {0}", logPath.string());
 
@@ -102,13 +100,12 @@ namespace FischiEngine
         Log::Trace("Successfully validated Application config!");
 
         Platform::Init();
-
-        init_vulkan_test();
     }
 
     Application::~Application()
     {
         Log::Info("Fischi Engine shutting down...");
+        RenderPlatform::OnShutdown();
         Platform::Shutdown();
     }
 
@@ -135,7 +132,7 @@ namespace FischiEngine
             for (Event* event = m_EventQueue.begin(); event < m_EventQueue.end(); event +=
                  EventQueue::GetMaxEventSize())
             {
-                Log::Trace("Event: {0}", event->ToString());
+                //Log::Trace("Event: {0}", event->ToString());
                 // TODO: Handle default events
                 if (OnEvent(event))
                     continue;

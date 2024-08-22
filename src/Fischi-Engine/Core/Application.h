@@ -3,9 +3,11 @@
 #include <filesystem>
 
 #include "Core.h"
+#include "Log.h"
 #include "Window.h"
 #include "Event/EventQueue.h"
 #include "Memory/Memory.h"
+#include "Platform/RenderPlatform.h"
 
 namespace FischiEngine
 {
@@ -14,6 +16,8 @@ namespace FischiEngine
         const char* Name = nullptr;
         const char* Version = nullptr;
         bool Standalone;
+        RenderPlatform::Type RenderPlatform;
+        Log::Level LogLevel;
     };
     
     class FISCHI_API Application
