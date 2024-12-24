@@ -1,6 +1,0 @@
-[submodule "dependencies/premake/vscode"]
-	path = dependencies/premake/vscode
-	url = https://github.com/Enhex/premake-vscode
-[submodule "dependencies/spdlog"]
-	path = dependencies/spdlog
-	url = https://github.com/gabime/spdlog

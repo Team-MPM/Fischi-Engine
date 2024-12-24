@@ -3,13 +3,12 @@
 .vscode/
 bin/
 obj/
+build/
 
 *.sln
 *.vcxproj
 *.user
 *.filters
-Makefile
-
-
-error.log
-debug.log
+*.log
+*.config
+*.config.old
