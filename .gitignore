@@ -4,6 +4,7 @@
 bin/
 obj/
 build/
+cmake-build-*/
 
 *.sln
 *.vcxproj
