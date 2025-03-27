@@ -32,36 +32,48 @@ find_package(glm REQUIRED)
 
 add_executable(sandbox)
 
+# Functions
+
+function(add_module TARGET NAME BASE_DIR)
+    target_sources(${TARGET}
+            PUBLIC
+            FILE_SET ${NAME}
+            TYPE CXX_MODULES
+            BASE_DIRS ${BASE_DIR}
+            FILES ${ARGN})
+endfunction()
+
+# File sets
+
+set(STD_FILES
+        ${MOD_BASE_DIR}/std.cppm
+        ${MOD_BASE_DIR}/std.compat.cppm)
+set(STD_FILES_DIR ${MOD_BASE_DIR})
+
+set(GLM_FILES
+        dependencies/glm/glm/glm.cppm)
+set(GLM_FILES_DIR dependencies/glm/glm)
+
+set(CORE_FILES
+        src/engine/core/core.cppm
+        src/engine/core/app.cppm
+        src/engine/core/service.cppm
+        src/engine/core/di.cppm
+        src/engine/core/math.cppm
+        src/engine/core/logger.cppm)
+set(CORE_FILES_DIR src/engine/core)
+
+set (SANDBOX_FILES
+        src/sandbox/main.cpp)
+
+# Sandbox
+
 target_include_directories(sandbox PRIVATE
         dependencies/spdlog/include
         dependencies/glm/glm)
 
-target_sources(sandbox
-        PUBLIC
-        FILE_SET moduleStd
-        TYPE CXX_MODULES
-        BASE_DIRS ${MOD_BASE_DIR}
-        FILES
-        ${MOD_BASE_DIR}/std.cppm
-        ${MOD_BASE_DIR}/std.compat.cppm)
+add_module(sandbox moduleStd ${STD_FILES_DIR} ${STD_FILES})
+add_module(sandbox moduleGlm ${GLM_FILES_DIR} ${GLM_FILES})
+add_module(sandbox moduleCore ${CORE_FILES_DIR} ${CORE_FILES})
 
-target_sources(sandbox
-        PUBLIC
-        FILE_SET moduleGlm
-        TYPE CXX_MODULES
-        BASE_DIRS dependencies/glm/glm
-        FILES
-        dependencies/glm/glm/glm.cppm)
-
-target_sources(sandbox
-        PUBLIC
-        FILE_SET moduleCore
-        TYPE CXX_MODULES
-        BASE_DIRS src/engine/core
-        FILES
-        src/engine/core/core.cppm
-        src/engine/core/math.cppm
-        src/engine/core/logger.cppm)
-
-target_sources(sandbox PRIVATE
-        src/sandbox/main.cpp)
+target_sources(sandbox PRIVATE ${SANDBOX_FILES})

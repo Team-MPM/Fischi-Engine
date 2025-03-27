@@ -2,12 +2,13 @@ import core;
 import std;
 
 int main() {
-    initialize_logger();
-    log_info("test");
-    log_error("test");
+    DIContainer container;
 
-    glm::vec2 x;
-    glm::vec4 y;
+    auto logger = container.resolve<Logger>();
+    logger->info("Hello World!");
+
+    auto math = container.resolve<Math>();
+    math->add(5, 5);
 
     return 0;
 }
