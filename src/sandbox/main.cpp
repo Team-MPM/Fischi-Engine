@@ -2,21 +2,20 @@ import core;
 import std;
 
 int main() {
-    DIContainer container;
-
-    auto logger = container.resolve<Logger>();
-    logger->info("Hello World!");
-
-    //auto math = container.resolve<Math>();
-    //math->add(5, 5);
-
     App app;
+    const auto logger = app.get_service<Logger>();
 
-    app.get_event_dispatcher()->registerHandler<TestEvent>([](const TestEvent& e) {
-        std::cout << "Button Press Event: button " << (int)e.getType() << "\n";
+    app.on_startup([&] {
+        logger->info("start");
     });
 
-    app.get_event_queue()->pushEvent<TestEvent>();
+    app.on_update([&] {
+       logger->info("update");
+   });
+
+    app.on_shutdown([&] {
+       logger->info("off");
+   });
 
     app.run();
 

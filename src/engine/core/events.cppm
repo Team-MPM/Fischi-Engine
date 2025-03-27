@@ -2,6 +2,7 @@ export module core:events;
 
 import std;
 import :math;
+import :service;
 
 export enum class EventType : uint32_t {
     ButtonPress,
@@ -31,10 +32,12 @@ public:
     virtual EventCategory getCategory() const = 0;
 };
 
-export class EventQueue {
+export class EventQueue final : public IService {
 public:
     template<typename EventT, typename... Args>
     void pushEvent(Args &&...args) {
+        static_assert(std::is_base_of_v<Event, EventT>, "EventT must derive from Event");
+
         m_Events.emplace_back(std::make_unique<EventT>(std::forward<Args>(args)...));
     }
 
@@ -46,7 +49,7 @@ private:
     std::vector<std::unique_ptr<Event>> m_Events;
 };
 
-export class EventDispatcher {
+export class EventDispatcher final : public IService {
 public:
     template<typename EventT>
     void registerHandler(std::function<void(const EventT &)> handler) {
@@ -81,14 +84,14 @@ private:
     EventCategory getCategory() const override { return getStaticCategory(); }
 
 #define EVENT_CLASS(name, type, category)                                                                              \
-    export class name final : public Event {                                                                                  \
+    export class name final : public Event {                                                                           \
     public:                                                                                                            \
         EVENT_TYPE(type)                                                                                               \
         EVENT_CATEGORY(category)                                                                                       \
     }
 
 #define EVENT_CLASS_DATA(name, type, category, dataType)                                                               \
-    export class name final : public Event {                                                                                  \
+    export class name final : public Event {                                                                           \
     public:                                                                                                            \
         dataType data;                                                                                                 \
         name(dataType data) : data(data) {}                                                                            \

@@ -45,6 +45,12 @@ public:
         m_ServiceInstances[key] = std::move(instance);
         return rawPtr;
     }
+
+    template<typename ServiceType>
+    void registerService(ServiceType* service) {
+        const std::type_index key(typeid(ServiceType));
+        m_ServiceInstances[key] = std::unique_ptr<ServiceType>(service);
+    }
 private:
     std::unordered_map<std::type_index, std::unique_ptr<IService>> m_ServiceInstances;
 };
