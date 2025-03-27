@@ -15,12 +15,13 @@ public:
         m_Console = spdlog::stdout_color_mt("console");
         m_Console->set_pattern(pattern);
         m_LatestLogFile = spdlog::basic_logger_mt("latest_log", "latest.log");
-        m_Console->set_pattern(pattern);
+        m_LatestLogFile->set_pattern(pattern);
     }
 
     template<typename... Args>
     void log(fmt::format_string<Args...> msg, const spdlog::level::level_enum level, Args&&... args) {
         m_Console->log(level, fmt::format(msg, std::forward<Args>(args)...));
+        m_LatestLogFile->log(level, fmt::format(msg, std::forward<Args>(args)...));
     }
 
     template<typename... Args>
@@ -55,19 +56,4 @@ public:
 private:
     std::shared_ptr<spdlog::logger> m_Console;
     std::shared_ptr<spdlog::logger> m_LatestLogFile;
-};
-
-export class Math : public IService {
-public:
-    using Dependencies = std::tuple<Logger>;
-    explicit Math(Logger* logger) : logger_(logger) {
-        logger_->info("Math service created.");
-    }
-
-    int add(int a, int b) const {
-        logger_->info("Performing addition.");
-        return a + b;
-    }
-private:
-    Logger* logger_;
 };

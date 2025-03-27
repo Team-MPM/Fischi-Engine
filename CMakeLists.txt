@@ -59,6 +59,7 @@ set(CORE_FILES
         src/engine/core/app.cppm
         src/engine/core/service.cppm
         src/engine/core/di.cppm
+        src/engine/core/events.cppm
         src/engine/core/math.cppm
         src/engine/core/logger.cppm)
 set(CORE_FILES_DIR src/engine/core)
